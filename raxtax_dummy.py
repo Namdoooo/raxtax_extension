@@ -41,27 +41,11 @@ def calculate_probabilities(match_counts: np.ndarray, reference_set_sizes: np.nd
 
     return pmfs
 
-def calculate_Ci(pmfs_prefix_sum: np.ndarray, i: int, t: int) -> np.ndarray:
-    n = len(pmfs_prefix_sum)
-    Ci = np.zeros(t + 1)
-    for m in range(t + 1):
-        Ci[m] = np.prod([pmfs_prefix_sum[j][m] for j in range(n) if i != j])
-    return Ci
-
-def calculate_C(pmfs: np.ndarray, t: int) -> np.ndarray:
+def calculate_P(pmfs: np.ndarray) -> np.ndarray:
     pmfs_prefix_sum = np.cumsum(np.array(pmfs), axis=1)
+    C = np.prod(pmfs_prefix_sum, axis=0)
 
-    C = np.zeros((len(pmfs), t + 1))
-    for i in range(len(pmfs)):
-        C[i, :] = calculate_Ci(pmfs_prefix_sum, i, t)
-
-    return C
-
-def calculate_P(pmfs: np.ndarray, C: np.ndarray, t: int) -> np.ndarray:
-    n = len(pmfs)
-    P = np.zeros(n)
-    for i in range(n):
-        P[i] = np.dot(pmfs[i], C[i])
+    P = np.sum(pmfs * (C / pmfs_prefix_sum), axis=1)
     return P
 
 def normalize_P(P: np.ndarray) -> np.ndarray:
@@ -70,12 +54,10 @@ def normalize_P(P: np.ndarray) -> np.ndarray:
 
 def calculate_confidence_scores(match_counts: np.ndarray, reference_set_sizes: np.ndarray, t: int, query_set_size: int) -> np.ndarray:
     pmfs = calculate_probabilities(match_counts, reference_set_sizes, t, query_set_size)
-    C = calculate_C(pmfs, t)
-    P = calculate_P(pmfs, C, t)
+    P = calculate_P(pmfs)
     normalized_P = normalize_P(P)
 
     return normalized_P
-
 
 def plot_probabilities(probabilities: np.ndarray, x_labels: np.ndarray, xlabel: str = "matching k-mers",
                            ylabel: str = "Probability", title: str = "Probability matching k-mers"):
