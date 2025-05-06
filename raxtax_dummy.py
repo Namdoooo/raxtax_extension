@@ -119,10 +119,10 @@ def plot_contour_shared_vs_matched(shared_counts, true_matches, probabilities,
     #plt.show()
 
 def test0():
-    match_counts = np.array([1, 2, 3, 4, 5])
-    reference_set_sizes = np.array([20, 20, 20, 20, 20])
+    match_counts = np.array([3, 7, 12, 20, 30])
+    reference_set_sizes = np.array([200, 200, 200, 200, 200])
     t = 8
-    query_set_size = 20
+    query_set_size = 200
     confidence_scores = calculate_confidence_scores(match_counts, reference_set_sizes, t, query_set_size)
 
     for x in confidence_scores:
@@ -131,6 +131,8 @@ def test0():
     print(np.sum(confidence_scores))
 
     plot_probabilities(confidence_scores, np.arange(1, len(match_counts) + 1))
+
+    plt.show()
 
 def test1():
     match_count = np.array([13, 20, 29])
@@ -165,9 +167,6 @@ def test1():
 def main():
     #test0()
     test1()
-
-
-
 
 if __name__ == "__main__":
     main()
