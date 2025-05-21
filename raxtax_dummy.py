@@ -1,18 +1,25 @@
+import time
+
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from scipy.special import comb
+
+import rust_bindings
+import baseline
 
 #calculates pmf for one query sequence
 def calculate_pmf(match_count: int, reference_set_size: int, query_set_size: int, t: int) -> np.ndarray:
     # references equation 8
-    denominator = math.comb(query_set_size + t - 1, t)
+    denominator = comb(query_set_size + t - 1, t)
 
     nominator1_n = match_count + 0 - 1
     nominator1_k = 0
-    nominator2_n = reference_set_size - match_count + (t - 0) - 1
+    #nominator2_n = reference_set_size - match_count + (t - 0) - 1
+    nominator2_n = query_set_size - match_count + (t - 0) - 1
     nominator2_k = t - 0
 
-    nominator = math.comb(nominator1_n, nominator1_k) * math.comb(nominator2_n, nominator2_k)
+    nominator = comb(nominator1_n, nominator1_k) * comb(nominator2_n, nominator2_k)
 
     pmf: np.ndarray = np.zeros(t + 1)
     pmf[0] = nominator / denominator
@@ -43,20 +50,54 @@ def calculate_probabilities(match_counts: np.ndarray, reference_set_sizes: np.nd
 
 #calculate array P with the cashed C
 def calculate_P(pmfs: np.ndarray) -> np.ndarray:
-    pmfs_prefix_sum = np.cumsum(np.array(pmfs), axis=1)
-    C = np.prod(pmfs_prefix_sum, axis=0)
+    pmfs_sum = np.sum(pmfs, axis=1)
+    #print("pmfs_sum: ")
+    #print(pmfs_sum)
 
-    P = np.sum(pmfs * (C / pmfs_prefix_sum), axis=1)
+    pmfs_prefix_sum = np.cumsum(np.array(pmfs), axis=1, dtype=np.float64)
+
+    #print("pmfs_prefix_sum: ")
+    #print(pmfs_prefix_sum)
+
+    #print("Last three elements of each row:")
+    #print(pmfs_prefix_sum[:, -3:])
+
+    #print(pmfs_prefix_sum[:, -2])
+    #for x in pmfs_prefix_sum[:, -2]:
+    #    print(x)
+    #print("Produkt der vorletzten Spalte (sollte ≈ 1 sein):")
+    #print(np.prod(pmfs_prefix_sum[:, -2]))
+
+    log_C = np.sum(np.log(pmfs_prefix_sum), axis=0, dtype=np.float64)
+
+    #print("log_C: ")
+    #print(log_C)
+
+    #C = np.exp(log_C)
+    C = np.prod(pmfs_prefix_sum, axis=0, dtype=np.float64)
+    #print("C: ")
+    #print(C)
+
+    P = np.sum(pmfs * (C / pmfs_prefix_sum), axis=1, dtype=np.float64)
     return P
 
 def normalize_P(P: np.ndarray) -> np.ndarray:
-    sum = np.sum(P)
+    sum = np.sum(P, dtype=np.float64)
     return P / sum
 
 def calculate_confidence_scores(match_counts: np.ndarray, reference_set_sizes: np.ndarray, t: int, query_set_size: int) -> np.ndarray:
     pmfs = calculate_probabilities(match_counts, reference_set_sizes, t, query_set_size)
+
+    #print("pmfs:")
+    #print(pmfs)
+
     P = calculate_P(pmfs)
+    #print("P:")
+    #print(P)
+
     normalized_P = normalize_P(P)
+    #print("normalized_P:")
+    #print(normalized_P)
 
     return normalized_P
 
@@ -135,13 +176,16 @@ def test0():
     plt.show()
 
 def test1():
+    print("test1")
     match_count = np.array([13, 20, 29])
     reference_set_size = np.array([200, 200, 200])
     query_set_size = 200
     t = 32
 
     calculated_pmfs = calculate_probabilities(match_count, reference_set_size, t, query_set_size)
-    #print(calculated_pmfs)
+    print(calculated_pmfs)
+    print(np.sum(calculated_pmfs, axis=1))
+
     plot_contour_shared_vs_matched(match_count, np.arange(t + 1), calculated_pmfs.T)
 
     real_pmfs = np.array([
@@ -163,10 +207,74 @@ def test1():
 
     plt.show()
 
+def test2():
+    print("test2: ")
+    match_count = 67
+    reference_size = 195
+    query_size = 188
+
+    t = 32
+
+    print("fast calc:")
+    pmf = calculate_pmf(match_count, reference_size, query_size, t)
+    print(pmf)
+    print(np.sum(pmf))
+    print()
+
+    print("baseline calc: ")
+    b_pmf = baseline.calculate_pmf(match_count, reference_size, query_size, t)
+    print(b_pmf)
+    print(np.sum(b_pmf))
+    print()
+
 
 def main():
     #test0()
-    test1()
+    #test1()
+    #test2()
+
+    reference_path_str = "./validator/example/diptera_references.fasta"
+    queries_path_str = "./validator/example/diptera_queries_small.fasta"
+
+    print(time.perf_counter())
+
+    results, reference_sizes = rust_bindings.parse_input1(reference_path_str, queries_path_str)
+    print(time.perf_counter())
+    #print("hallo")
+
+
+    #print("reference sizes:")
+    #print(reference_sizes)
+    print()
+
+    for x in results:
+        prob = calculate_confidence_scores(np.array(x[2]), np.array(reference_sizes), 32, x[1])
+
+        #print("Name:")
+        #print(x[0])
+        #print()
+
+        #print("querie set size:")
+        #print(x[1])
+        #print()
+
+        #print("intersection sizes:")
+        #print(x[2])
+        #print()
+
+        print("probability:")
+        print(prob)
+
+        print("result:")
+        print(x[0], max(prob))
+
+
+    print(time.perf_counter())
+
+
+    #print(reference_sizes)
+
+    print("----------------------------------------------------------")
 
 if __name__ == "__main__":
     main()
