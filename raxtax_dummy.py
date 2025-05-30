@@ -5,12 +5,21 @@ import math
 import matplotlib.pyplot as plt
 from scipy.special import comb
 
+from itertools import groupby
+from operator import itemgetter
+
 import rust_bindings
 import baseline
 
 #calculates pmf for one query sequence
 def calculate_pmf(match_count: int, reference_set_size: int, query_set_size: int, t: int) -> np.ndarray:
     # references equation 8
+
+    pmf: np.ndarray = np.zeros(t + 1)
+    if match_count == 0:
+        pmf[0] = 1
+        return pmf
+
     denominator = comb(query_set_size + t - 1, t)
 
     nominator1_n = match_count + 0 - 1
@@ -21,8 +30,10 @@ def calculate_pmf(match_count: int, reference_set_size: int, query_set_size: int
 
     nominator = comb(nominator1_n, nominator1_k) * comb(nominator2_n, nominator2_k)
 
-    pmf: np.ndarray = np.zeros(t + 1)
     pmf[0] = nominator / denominator
+
+    if pmf[0] == 0:
+        print(0, match_count, reference_set_size, query_set_size)
 
     for i in range(1, t + 1):
         nominator1_n += 1
@@ -32,8 +43,14 @@ def calculate_pmf(match_count: int, reference_set_size: int, query_set_size: int
 
         pmf[i] = nominator / denominator
 
+        if pmf[i] == 0:
+            print(i, match_count, reference_set_size, query_set_size)
+
         nominator2_n -= 1
         nominator2_k -= 1
+
+    if np.any(pmf == 0.0):
+        raise ValueError("PMF contains zero entries, which is not allowed.")
 
     return pmf
 
@@ -50,7 +67,7 @@ def calculate_probabilities(match_counts: np.ndarray, reference_set_sizes: np.nd
 
 #calculate array P with the cashed C
 def calculate_P(pmfs: np.ndarray) -> np.ndarray:
-    pmfs_sum = np.sum(pmfs, axis=1)
+    #pmfs_sum = np.sum(pmfs, axis=1)
     #print("pmfs_sum: ")
     #print(pmfs_sum)
 
@@ -73,10 +90,29 @@ def calculate_P(pmfs: np.ndarray) -> np.ndarray:
     #print("log_C: ")
     #print(log_C)
 
-    #C = np.exp(log_C)
+    C1 = np.exp(log_C)
     C = np.prod(pmfs_prefix_sum, axis=0, dtype=np.float64)
+    #print("C1: ")
+    #print(C1)
     #print("C: ")
     #print(C)
+
+    #pmfs_prefix_sum[pmfs_prefix_sum == 0.0] = 1e-300
+
+    num_rows = pmfs_prefix_sum.shape[0]
+    half = num_rows // 2
+
+
+
+    # Erste Hälfte
+    #C_first = np.prod(pmfs_prefix_sum[:half, :], axis=0, dtype=np.float64)
+
+    # Zweite Hälfte
+    #C_second = np.prod(pmfs_prefix_sum[half:, :], axis=0, dtype=np.float64)
+    #print("C_first: ")
+    #print(C_first)
+    #print("C_second: ")
+    #print(C_second)
 
     P = np.sum(pmfs * (C / pmfs_prefix_sum), axis=1, dtype=np.float64)
     return P
@@ -228,27 +264,78 @@ def test2():
     print()
 
 
+def check_similarity(res1, res2):
+    if (len(res1) != len(res2)):
+        print("res1 and res2 are not the same size")
+    for i in range(len(res1)):
+        if len(res1[i][2]) != len(res2[i][2]):
+            print(f"res1 and res2 are not the same size in row {i}")
+
+    for i in range(len(res1)):
+        sum = 0
+        total = 0
+        for j in range(len(res1[i][2])):
+            total += 1
+            if res1[i][2][j] == res2[i][2][j]:
+                sum += 1
+        print(f"sum: {sum}, total: {total}")
+        print(f"row {i} has {sum/total} similarity")
+
+
 def main():
     #test0()
     #test1()
     #test2()
 
     reference_path_str = "./validator/example/diptera_references.fasta"
-    queries_path_str = "./validator/example/diptera_queries_small.fasta"
+    queries_path_str = "./validator/example/diptera_queries_triple.fasta"
+    queries_path_str_control = "./validator/example/diptera_queries_complement_alternate.fasta"
 
     print(time.perf_counter())
 
-    results, reference_sizes = rust_bindings.parse_input1(reference_path_str, queries_path_str)
-    print(time.perf_counter())
-    #print("hallo")
+    #results_control, reference_sizes_control, names_control = rust_bindings.parse_input1(reference_path_str, queries_path_str, False)
 
+    #res1, reference_sizes_control, nam1 = rust_bindings.parse_input1(reference_path_str, queries_path_str_control, True)
+
+    results, reference_sizes, names = rust_bindings.parse_input1(reference_path_str, queries_path_str, True)
+    print(time.perf_counter())
+
+    #check_similarity(results, res1)
+
+    """
+    print("control is the same:")
+    # Vergleiche Element für Element
+    equal = np.array(results[2]).flatten() == np.array(res1[2]).flatten()
+    # Anzahl gleicher Elemente
+    num_equal = np.sum(equal)
+    # Gesamtanzahl der Elemente
+    total = len(reference_sizes)
+    # Prozentuale Übereinstimmung
+    percentage = (num_equal / total) * 100
+    print(percentage)
+    print()"""
 
     #print("reference sizes:")
     #print(reference_sizes)
     print()
 
     for x in results:
-        prob = calculate_confidence_scores(np.array(x[2]), np.array(reference_sizes), 32, x[1])
+        t = x[1] // 2
+        print(x[0])
+        prob = calculate_confidence_scores(np.array(x[2]), np.array(reference_sizes), t, x[1])
+
+        combined = list(zip(names, prob))
+        #print(combined[:10])
+        result = [(key, sum(p for _, p in group)) for key, group in groupby(combined, key=itemgetter(0))]
+        #print(result[:10])
+        filtered_result = sorted([(n, p) for n, p in result if p >= 0.005], key=lambda x: x[1], reverse=True)
+        #print(filtered_result)
+
+        for n, p in filtered_result:
+            print(n, p)
+
+
+        print()
 
         #print("Name:")
         #print(x[0])
@@ -262,12 +349,30 @@ def main():
         #print(x[2])
         #print()
 
-        print("probability:")
-        print(prob)
+        #print("probability:")
+        #print(prob)
+        #print(np.sum(prob))
 
-        print("result:")
-        print(x[0], max(prob))
+        #print("result:")
+        #print(x[0], max(prob))
 
+
+        print("name : intersection size")
+        k = 30
+        indices = np.argpartition(x[2], -k)[-k:]
+        print(sorted(indices))
+        top_k_data = [(names[i], x[2][i]) for i in indices]
+        top_k_data_sorted = sorted(top_k_data, key=lambda x: x[1], reverse=True)
+        for name, size in top_k_data_sorted:
+            print(name, size)
+
+        indices = np.argpartition(prob, -k)[-k:]
+        top_k_data = [(names[i], prob[i]) for i in indices]
+        top_k_data_sorted = sorted(top_k_data, key=lambda x: x[1], reverse=True)
+        for name, size in top_k_data_sorted:
+            print(name, size)
+
+        print(len(prob), len(names))
 
     print(time.perf_counter())
 

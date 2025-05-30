@@ -1,0 +1,4 @@
+[INFO ] Read file and create k-mer mapping, Elapsed=101.838417ms
+[INFO ] parse_reference_fasta_file(), Elapsed=354.461042ms
+[INFO ] parse_query_fasta_file(), Elapsed=758.208µs
+[INFO ] raxtax(), Elapsed=6.133167ms
