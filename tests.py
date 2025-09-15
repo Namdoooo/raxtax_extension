@@ -2,10 +2,14 @@ import pytest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from prob import calculate_confidence_scores
 import prob
+import prob_fast
 import viz_utils
 import baseline
+import raxtax_dummy
+
+import rust_bindings
+
 
 
 def test_confidence_scores_validity():
@@ -13,7 +17,7 @@ def test_confidence_scores_validity():
     reference_set_sizes = np.array([200, 200, 200, 200, 200])
     t = 8
     query_set_size = 200
-    confidence_scores = calculate_confidence_scores(match_counts, reference_set_sizes, t, query_set_size)
+    confidence_scores = prob.calculate_confidence_scores(match_counts, reference_set_sizes, t, query_set_size)
 
     assert np.all(confidence_scores >= 0), "Confidence scores contain negative values"
     assert np.isclose(np.sum(confidence_scores), 1.0), "Confidence scores do not sum to 1"
@@ -24,7 +28,7 @@ def plot_confidence_scores():
     t = 8
     query_set_size = 200
 
-    confidence_scores = calculate_confidence_scores(match_counts, reference_set_sizes, t, query_set_size)
+    confidence_scores = prob.calculate_confidence_scores(match_counts, reference_set_sizes, t, query_set_size)
     viz_utils.plot_probabilities(confidence_scores, np.arange(1, len(confidence_scores) + 1))
     plt.show()
 
@@ -75,6 +79,54 @@ def test_calculate_pmf():
     b_pmf = baseline.calculate_pmf(match_count, reference_size, query_size, t)
     assert np.allclose(pmf, b_pmf, rtol=1e-9, atol=1e-12), "Lists are not close enough"
 
+def test_correct_orientation():
+    num_queries = 3
+    reference_path_str = "./validator/example/diptera_references.fasta"
+    queries_path_oriented_str = "./validator/example/diptera_queries_small.fasta"
+    queries_path_disoriented_str = "./validator/example/diptera_queries_small_complement_alternate.fasta"
+
+    expected_results, expected_reference_sizes, expected_names = rust_bindings.parse_input1(reference_path_str, queries_path_oriented_str, False)
+    calculated_results, calculated_reference_sizes, calculated_names = rust_bindings.parse_input1(reference_path_str, queries_path_disoriented_str, True)
+
+    assert expected_reference_sizes == calculated_reference_sizes
+    assert expected_names == calculated_names
+
+    for i in range(len(expected_results)):
+        assert expected_results[i][0] == calculated_results[i][0]
+        assert expected_results[i][1] == calculated_results[i][1]
+        assert expected_results[i][2] == calculated_results[i][2]
+
+def test_results_match_raxtax():
+    reference_path_str = "./validator/example/diptera_references.fasta"
+    queries_path_str = "./validator/example/diptera_queries_small.fasta"
+    #queries_path_str = "./validator/example/diptera_queries_triple.fasta"
+
+
+    results, reference_sizes, expected_names = rust_bindings.parse_input1(reference_path_str, queries_path_str, False)
+
+    matchings = {}
+
+    for query_res in results:
+        matchings[query_res[0]] = {}
+
+        t = query_res[1] // 2
+        probabilities = prob.calculate_confidence_scores(np.array(query_res[2]), np.array(reference_sizes), t, query_res[1])
+
+        filtered_result = raxtax_dummy.evaluate_confidence_scores(expected_names, probabilities)
+
+        for n, p in filtered_result:
+            matchings[query_res[0]][n] = (p, 0)
+
+    control_path_str = "./validator/control_results/diptera_queries_small.out/raxtax.out"
+    #control_path_str = "./validator/control_results/diptera_queries_triple.out/raxtax.out"
+    matching_control = parse_raxtax_out_file(control_path_str)
+
+    print()
+    print(matching_control)
+    print(matchings)
+
+    assert compare_matching_results(matching_control, matchings) > 0.95
+
 def check_similarity_2darray(arr1, arr2):
     assert (len(arr1) == len(arr2))
 
@@ -90,3 +142,58 @@ def check_similarity_2darray(arr1, arr2):
         #print(f"sum: {sum}, total: {total}")
         #print(f"row {i} has {sum/total} similarity")
     return sum/total
+
+def compare_matching_results(dict1, dict2, tolerance=1e-2):
+    if dict1.keys() != dict2.keys():
+        print("dict1 and dict2 have different keys")
+        return False
+
+    sum_correct = len(dict1)
+
+    for query in dict1:
+        inner1 = dict1[query]
+        inner2 = dict2.get(query)
+
+        if inner1.keys() != inner2.keys():
+            print(f"Different lineages for query {query}: {inner1.keys() ^ inner2.keys()}")
+            #return False
+
+        for lineage in inner1:
+            val1, _ = inner1[lineage]
+            val2 = 0
+            if lineage in inner2:
+                val2, _ = inner2[lineage]
+
+
+            if val1 == 1:
+                continue
+
+            if abs(val1 - val2) > tolerance:
+                print(f"Values differ for {query} - {lineage}: {val1} vs {val2}")
+                sum_correct -= 1
+                break
+    res = round(sum_correct / len(dict1), 2)
+    print(res)
+    return res
+
+def parse_raxtax_out_file(path_str):
+    results = {}
+    with open(path_str, "r") as file:
+        for line in file:
+            if not line.strip():
+                continue
+            parts = line.strip().split('\t')
+            if len(parts) != 5:
+                print(len(parts))
+                continue
+            query_name = parts[0]
+            match_lineage = parts[1]
+            confidence_scores = parts[2].split(',')
+            local_signal = float(parts[3])
+            global_signal = float(parts[4])
+
+            if query_name not in results:
+                results[query_name] = {match_lineage: (float(confidence_scores[-1]), global_signal)}
+            else:
+                results[query_name][match_lineage] = (float(confidence_scores[-1]), global_signal)
+    return results

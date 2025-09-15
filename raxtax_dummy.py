@@ -2,107 +2,118 @@ import time
 
 import numpy as np
 
+from pathlib import Path
+
 from itertools import groupby
 from operator import itemgetter
 
+import parser_short_long
+
 import rust_bindings
-from prob import calculate_confidence_scores
+from prob_fast import calculate_confidence_scores
+
+import parser_short_short
+
+import parser_newick
+
+def evaluate_confidence_scores(names, prob):
+
+    combined = list(zip(names, prob))
+    result = [(key, sum(p for _, p in group)) for key, group in groupby(combined, key=itemgetter(0))]
+    filtered_result = sorted([(n, float(round(p, 2))) for n, p in result if p >= 0.005], key=lambda x: x[1], reverse=True)
+
+    return filtered_result
+
+def print_lineage_matching(lineage_confidences):
+    for (n, p) in lineage_confidences:
+        print(n, p)
+
 
 def main():
 
-    reference_path_str = "./validator/example/diptera_references.fasta"
+    query_set_size = 1147
+    intersection_sizes = [38, 36, 37, 40, 40, 40, 37, 37, 37, 44, 38, 42, 34, 40, 40, 41, 35, 43, 36, 34, 39, 35, 44, 42, 39, 39, 41, 33, 41, 37, 34, 38, 38, 37, 38, 45, 43, 38, 36, 41, 39, 40, 46, 40, 34, 38, 42, 40, 42, 43, 37, 36, 32, 37, 34, 33, 37, 38, 40, 36, 32, 38, 52, 37, 42, 41, 37, 36, 40, 36, 38, 36, 32, 37, 39, 38, 36, 39, 37, 40, 36, 38, 40, 38, 34, 44, 39, 36, 40, 38, 35, 42, 40, 33, 41, 40, 43, 39, 39, 42, 37, 37, 49, 41, 37, 41, 39, 46, 39, 43, 36, 34, 36, 42, 37, 35, 37, 38, 35, 36, 38, 40, 38, 37, 35, 35, 40, 46, 41, 45, 35, 39, 41, 39, 42, 37, 34, 38, 35, 44, 44, 40, 40, 39, 35, 35, 43, 36, 36, 45, 34, 36, 40, 35, 33, 40, 37, 43, 36, 47, 37, 33, 39, 38, 32, 35, 35, 45, 39, 38, 39, 36, 40, 40, 40, 39, 37, 40, 40, 38, 36, 36, 42, 36, 40, 39, 34, 37, 35, 35, 37, 41, 36, 37, 42, 38, 36, 38, 40, 44, 38, 37, 39, 37, 38, 37, 37, 44, 35, 38, 41, 51, 38, 36, 38, 41, 37, 37, 45, 37, 41, 38, 42, 40, 38, 36, 35, 38, 35, 40, 32, 37, 41, 35, 33, 33, 37, 34, 32, 37, 40, 44, 42, 31, 42, 35, 36, 35, 34, 38, 40, 37, 35, 37, 39, 35, 35, 38, 40, 37, 39, 36, 41, 33, 39, 34, 47, 38, 44, 36, 41, 39, 36, 41, 39, 38, 38, 48, 40, 40, 42, 44, 45, 37, 35, 47, 40, 40, 42, 46, 33, 43, 35, 34, 39, 35, 38, 44, 36, 36, 37, 35, 39, 35, 40, 43, 45, 45, 38, 49, 34, 40, 42, 36, 37, 38, 35, 36, 35, 31, 37, 36, 37, 39, 40, 37, 35, 33, 36, 36, 37, 41, 43, 37, 42, 43, 41, 39, 37, 43, 34, 39, 34, 40, 40, 34, 39, 39, 42, 39, 35, 48, 38, 36, 35, 37, 37, 35, 44, 44, 39, 39, 35, 34, 43, 34, 39, 37, 41, 39, 38, 38, 34, 35, 39, 42, 44, 40, 49, 36, 44, 37, 41, 37, 37, 41, 37, 35, 38, 38, 40, 37, 45, 39, 39, 36, 40, 35, 36, 35, 46, 38, 40, 43, 38, 38, 47, 46, 36, 36, 40, 41, 40, 34, 42, 39, 37, 34, 35, 35, 35, 40, 40, 37, 49, 41, 36, 40, 39, 45, 41, 33, 38, 37, 34, 37, 35, 33, 37, 37, 40, 39, 42, 36, 37, 42, 36, 37, 37, 37, 36, 36, 36, 41, 38, 39, 36, 35, 40, 35, 37, 33, 38, 44, 36, 48, 40, 34, 32, 38, 38, 35, 35, 33, 38, 44, 32, 35, 40, 37, 35, 39, 37, 32, 36, 36, 37, 37, 34, 37, 34, 38, 40, 47, 41, 41, 45, 38, 42, 37, 33, 41, 34, 37, 34, 34, 36, 33, 35, 38, 34, 38, 35, 37, 37, 37, 32, 38, 38, 39, 42, 38, 40, 34, 37, 36, 33, 53, 36, 38, 40, 41, 40, 41, 43, 38, 42, 33, 41, 37, 39, 38, 35, 35, 38, 38, 42, 36, 41, 38, 43, 41, 37, 40, 36, 42, 36, 41, 35, 38, 41, 37, 35, 34, 34, 37, 38, 35, 43, 35, 35, 34, 41, 45, 41, 36, 37, 34, 36, 38, 37, 39, 40, 34, 37, 36, 36, 36, 37, 40, 40, 34, 30, 38, 40, 39, 43, 39, 35, 40, 42, 35, 41, 40, 37, 43, 35, 37, 38, 39, 37, 42, 32, 39, 41, 37, 36, 37, 34, 35, 36, 34, 39, 36, 36, 35, 34, 39, 32, 34, 37, 34, 39, 38, 40, 38, 36, 35, 40, 38, 36, 39, 37, 37, 35, 33, 36, 37, 37, 32, 40, 41, 39, 39, 37, 35, 36, 40, 40, 35, 39, 36, 41, 35, 34, 38, 39, 40, 43, 40, 41, 38, 40, 35, 37, 41, 32, 43, 38, 39, 33, 43, 42, 35, 40, 40, 36, 39, 39, 35, 39, 37, 36, 41, 41, 38, 37, 42, 35, 37, 45, 38, 38, 33, 37, 44, 32, 39, 35, 44, 36, 33, 45, 39, 40, 40, 39, 37, 36, 35, 43, 34, 46, 33, 39, 37, 39, 41, 38, 40, 39, 43, 37, 36, 41, 38, 37, 37, 35, 42, 38, 43, 41, 43, 38, 33, 35, 39, 41, 39, 38, 39, 33, 37, 40, 36, 37, 37, 41, 38, 31, 37, 39, 39, 38, 38, 39, 33, 44, 38, 38, 40, 38, 40, 38, 37, 34, 36, 36, 38, 35, 45, 40, 41, 38, 42, 45, 36, 35, 39, 35, 39, 36, 35, 40, 36, 40, 46, 39, 36, 42, 37, 38, 39, 42, 39, 35, 33, 43, 37, 34, 39, 39, 33, 51, 41, 42, 40, 35, 43, 38, 38, 41, 42, 41, 37, 42, 47, 41, 42, 40, 37, 46, 36, 37, 36, 42, 38, 34, 34, 35, 36, 38, 38, 41, 38, 43, 40, 40, 40, 39, 40, 34, 37, 37, 37, 40, 35, 40, 36, 36, 45, 35, 46, 35, 46, 41, 38, 38, 33, 37, 42, 42, 44, 37, 46, 44, 36, 35, 41, 43, 34, 35, 39, 38, 34, 1147, 47, 35, 37, 40, 37, 39, 40, 33, 36, 38, 34, 38, 42, 36, 36, 40, 50, 36, 34, 43, 44, 32, 32, 46, 44, 38, 36, 44, 42, 38, 36, 41, 35, 41, 37, 35, 31, 34, 36, 39, 36, 36, 35, 37, 33, 47, 37, 33, 31, 36, 36, 35, 34, 33, 38, 39, 38, 38, 34, 38, 39, 31, 42, 38, 39, 35, 35, 43, 36, 42, 32, 34, 44, 32, 39, 35, 36, 32, 40, 34, 34, 36, 42, 41, 43, 37, 36, 42, 50, 37, 40, 40, 37, 36, 33, 37, 31, 35, 43, 42, 38, 36, 34, 36, 34, 36, 38, 39, 34, 34, 40, 41, 37]
+    name = "bbw"
+
+    prob = calculate_confidence_scores(np.array(intersection_sizes), query_set_size // 2, query_set_size)
+    #print(prob)
+
+    names = ["" for _ in intersection_sizes]
+
+    filtered_result = evaluate_confidence_scores(names, prob)
+    print(filtered_result)
+
+    print_lineage_matching(filtered_result)
+
+    query_set_size = 116
+    name = "adx"
+    intersection_sizes = [6, 8, 7, 5, 6, 5, 4, 3, 4, 4, 6, 5, 4, 4, 4, 4, 4, 5, 5, 3, 4, 4, 6, 3, 5, 5, 3, 5, 6, 3, 3, 5, 6, 4, 4, 5, 6, 5, 4, 5, 4, 5, 4, 5, 116, 5, 5, 4, 4, 7, 5, 4, 4, 4, 5, 6, 5, 7, 4, 6, 4, 3, 6, 6, 6, 6, 3, 5, 4, 5, 4, 5, 6, 7, 4, 4, 5, 6, 6, 6, 4, 5, 4, 4, 4, 4, 5, 4, 5, 5, 5, 5, 4, 6, 6, 4, 8, 4, 7, 4, 3, 6, 4, 3, 4, 5, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 6, 4, 3, 6, 5, 5, 4, 4, 4, 4, 6, 5, 4, 4, 7, 4, 4, 4, 7, 5, 4, 7, 4, 5, 5, 4, 5, 3, 4, 4, 3, 5, 6, 5, 4, 5, 4, 5, 3, 4, 5, 6, 4, 5, 5, 3, 7, 3, 7, 4, 4, 5, 4, 4, 3, 6, 4, 4, 6, 6, 4, 7, 4, 5, 5, 4, 3, 4, 4, 5, 3, 4, 4, 4, 6, 5, 3, 4, 4, 4, 3, 4, 7, 7, 7, 5, 5, 4, 5, 5, 3, 5, 5, 4, 5, 5, 4, 5, 4, 6, 5, 4, 4, 5, 4, 6, 4, 4, 3, 3, 5, 4, 7, 5, 4, 6, 3, 6, 4, 4, 4, 5, 4, 5, 6, 4, 3, 5, 7, 4, 5, 5, 6, 5, 5, 5, 4, 5, 4, 6, 4, 6, 6, 4, 5, 8, 4, 4, 4, 5, 4, 6, 5, 4, 7, 4, 4, 5, 5, 4, 3, 6, 4, 4, 5, 5, 4, 4, 5, 4, 4, 5, 4, 5, 4, 4, 6, 3, 4, 5, 5, 4, 4, 4, 4, 5, 5, 4, 5, 3, 6, 7, 4, 4, 6, 3, 7, 4, 4, 4, 4, 9, 4, 5, 4, 4, 5, 4, 5, 5, 4, 7, 5, 4, 5, 4, 4, 4, 4, 6, 5, 5, 7, 3, 4, 4, 4, 3, 4, 4, 5, 5, 7, 5, 7, 4, 3, 4, 3, 4, 5, 4, 4, 5, 7, 4, 5, 5, 6, 4, 4, 4, 3, 4, 3, 3, 4, 4, 3, 5, 5, 4, 4, 4, 6, 7, 6, 6, 5, 5, 5, 8, 5, 3, 4, 4, 4, 4, 4, 4, 5, 6, 4, 5, 6, 4, 5, 3, 7, 5, 4, 4, 4, 6, 5, 3, 5, 6, 7, 4, 6, 5, 4, 6, 8, 6, 6, 5, 7, 7, 4, 5, 5, 4, 5, 5, 6, 4, 4, 4, 7, 4, 5, 4, 6, 6, 5, 4, 3, 4, 4, 4, 7, 6, 4, 3, 5, 4, 4, 5, 4, 7, 4, 3, 4, 6, 5, 5, 3, 4, 5, 5, 3, 6, 6, 3, 4, 6, 6, 4, 4, 5, 4, 2, 4, 4, 6, 5, 4, 4, 6, 4, 5, 5, 5, 5, 4, 4, 4, 3, 5, 5, 4, 4, 4, 7, 4, 5, 6, 5, 4, 8, 4, 6, 5, 4, 5, 3, 4, 3, 5, 4, 5, 4, 4, 6, 4, 6, 5, 5, 5, 5, 6, 5, 6, 5, 5, 3, 4, 4, 5, 5, 4, 8, 4, 4, 4, 5, 3, 6, 2, 4, 5, 5, 4, 4, 4, 3, 5, 4, 5, 3, 4, 5, 3, 7, 3, 5, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 5, 4, 5, 5, 6, 6, 4, 5, 4, 3, 4, 5, 4, 4, 6, 6, 6, 6, 5, 5, 4, 5, 3, 4, 4, 5, 4, 6, 4, 3, 4, 5, 5, 4, 5, 5, 5, 6, 6, 7, 3, 4, 4, 3, 3, 3, 4, 7, 6, 4, 3, 5, 5, 5, 5, 4, 5, 4, 4, 5, 4, 4, 6, 5, 6, 4, 5, 4, 4, 6, 4, 6, 6, 6, 5, 4, 4, 4, 5, 5, 3, 5, 4, 4, 5, 4, 6, 5, 4, 5, 3, 3, 6, 4, 4, 4, 3, 4, 5, 5, 7, 8, 3, 5, 4, 4, 4, 5, 4, 3, 3, 4, 5, 4, 6, 4, 5, 3, 6, 5, 4, 5, 4, 3, 4, 5, 5, 4, 6, 5, 7, 6, 5, 5, 5, 4, 4, 5, 4, 5, 5, 5, 5, 6, 3, 5, 5, 5, 3, 5, 6, 6, 4, 4, 4, 3, 4, 7, 3, 4, 5, 3, 8, 12, 6, 5, 5, 7, 4, 4, 4, 6, 5, 4, 4, 4, 5, 5, 5, 5, 4, 4, 5, 4, 3, 4, 4, 4, 4, 4, 4, 5, 6, 5, 5, 3, 4, 6, 5, 4, 4, 3, 8, 4, 6, 6, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 4, 4, 4, 6, 4, 5, 4, 5, 3, 4, 5, 5, 5, 4, 4, 6, 4, 6, 4, 5, 5, 6, 2, 5, 4, 3, 4, 3, 4, 5, 4, 8, 5, 6, 3, 3, 6, 4, 3, 4, 5, 5, 5, 5, 4, 8, 5, 6, 4, 4, 6, 5, 5, 4, 3, 8, 5, 4, 5, 5, 4, 4, 5, 4, 8, 5, 3, 4, 4, 7, 3, 5, 5, 5, 4, 2, 6, 5, 4, 6, 7, 6, 4, 4, 5, 4, 4, 5, 5, 4, 4, 3, 6, 5, 6, 3, 4, 6, 6, 7, 4, 6, 6, 5, 3, 5, 3, 4, 7, 4, 5, 4, 4, 3, 5, 5, 3, 5, 5, 5, 7, 6, 4, 4, 5, 4, 4, 4, 7, 6, 5, 4, 5, 5, 7, 3, 4, 4, 4, 3, 5, 4, 4, 6, 5, 6, 4, 4, 4, 5, 6, 5, 6, 4, 3, 5, 6, 5, 5, 6, 3, 4, 4, 6, 4, 5, 4, 3, 3, 4, 7, 4, 5, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 4, 4, 6, 4, 4, 4, 5, 4, 6, 5, 4, 5, 4, 3, 6, 4, 4, 3, 4, 4, 6, 6, 5, 4, 4]
+
+    prob = calculate_confidence_scores(np.array(intersection_sizes), query_set_size // 2, query_set_size)
+    #print(prob)
+
+    names = ["" for _ in intersection_sizes]
+
+    filtered_result = evaluate_confidence_scores(names, prob)
+    print(filtered_result)
+
+    print_lineage_matching(filtered_result)
+
+    """
+    reference_path_str = "./validator/example/diptera_references_10.fasta"
     queries_path_str = "./validator/example/diptera_queries_triple.fasta"
     queries_path_str_control = "./validator/example/diptera_queries_complement_alternate.fasta"
 
+    reference_path_str1 = "./example_short_long/s1000_t6/references.fasta"
+    tree_path_str1 = "./example_short_long/s1000_t6/random_s1000_t6.nwk"
+    queries_path_str1 = "./example_short_long/s1000_t6/queries_every_random_1000.fasta"
+
     print(time.perf_counter())
+
+    print(time.perf_counter())
+
 
     #results_control, reference_sizes_control, names_control = rust_bindings.parse_input1(reference_path_str, queries_path_str, False)
-
     #res1, reference_sizes_control, nam1 = rust_bindings.parse_input1(reference_path_str, queries_path_str_control, True)
 
-    results, reference_sizes, names = rust_bindings.parse_input1(reference_path_str, queries_path_str, True)
+    #results, reference_sizes, names = rust_bindings.parse_input1(reference_path_str, queries_path_str, True)
+
+    #results, names = parser_short_short.get_intersection_sizes(Path(reference_path_str), Path(queries_path_str), False)
+
+    #results, names = parser_short_long.get_intersection_sizes(Path(reference_path_str), Path(queries_path_str), 205)
+
+    results, names = parser_short_long.get_intersection_sizes(Path(reference_path_str1), Path(queries_path_str1))
+
     print(time.perf_counter())
 
-    #check_similarity(results, res1)
-
-    """
-    print("control is the same:")
-    # Vergleiche Element für Element
-    equal = np.array(results[2]).flatten() == np.array(res1[2]).flatten()
-    # Anzahl gleicher Elemente
-    num_equal = np.sum(equal)
-    # Gesamtanzahl der Elemente
-    total = len(reference_sizes)
-    # Prozentuale Übereinstimmung
-    percentage = (num_equal / total) * 100
-    print(percentage)
-    print()"""
-
-    #print("reference sizes:")
-    #print(reference_sizes)
     print()
 
     for x in results:
         t = x[1] // 2
-        print(x[0])
-        prob = calculate_confidence_scores(np.array(x[2]), np.array(reference_sizes), t, x[1])
+        print(x[0], x[1]) #print the query name
+        print(x[2])
 
-        combined = list(zip(names, prob))
-        #print(combined[:10])
-        result = [(key, sum(p for _, p in group)) for key, group in groupby(combined, key=itemgetter(0))]
-        #print(result[:10])
-        filtered_result = sorted([(n, p) for n, p in result if p >= 0.005], key=lambda x: x[1], reverse=True)
-        #print(filtered_result)
+        start_time = time.perf_counter()
+        prob = calculate_confidence_scores(np.array(x[2]), t, x[1])
+        print(len(prob), prob[:10])
 
-        for n, p in filtered_result:
-            print(n, p)
+        top_indices = np.argsort(prob)[-10:]
+        for index in top_indices:
+            print(names[index], prob[index])
 
+        filtered_result = evaluate_confidence_scores(names, prob)
+
+        print_lineage_matching(filtered_result)
+        end_time = time.perf_counter()
+        print("time:", end_time - start_time)
 
         print()
-
-        #print("Name:")
-        #print(x[0])
-        #print()
-
-        #print("querie set size:")
-        #print(x[1])
-        #print()
-
-        #print("intersection sizes:")
-        #print(x[2])
-        #print()
-
-        #print("probability:")
-        #print(prob)
-        #print(np.sum(prob))
-
-        #print("result:")
-        #print(x[0], max(prob))
-
-
-        print("name : intersection size")
-        k = 30
-        indices = np.argpartition(x[2], -k)[-k:]
-        print(sorted(indices))
-        top_k_data = [(names[i], x[2][i]) for i in indices]
-        top_k_data_sorted = sorted(top_k_data, key=lambda x: x[1], reverse=True)
-        for name, size in top_k_data_sorted:
-            print(name, size)
-
-        indices = np.argpartition(prob, -k)[-k:]
-        top_k_data = [(names[i], prob[i]) for i in indices]
-        top_k_data_sorted = sorted(top_k_data, key=lambda x: x[1], reverse=True)
-        for name, size in top_k_data_sorted:
-            print(name, size)
-
-        print(len(prob), len(names))
 
     print(time.perf_counter())
 
 
-    #print(reference_sizes)
 
     print("----------------------------------------------------------")
-
+    #"""
 if __name__ == "__main__":
     main()

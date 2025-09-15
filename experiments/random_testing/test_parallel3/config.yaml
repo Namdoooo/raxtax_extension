@@ -1,0 +1,7 @@
+leaf_count: 100               # Anzahl der Blätter
+sequence_length: 1000         # Länge der Sequenzen
+tree_height: 1.5              # Höhe des Baums
+query_count: 50               # Anzahl der Anfragen
+iqtree_seed: 42               # Seed für IQ-TREE
+pygargammel_seed: 67890       # Seed für PyGargammel
+query_selection_seed: 12345   # Seed für die Anfrageauswahl
