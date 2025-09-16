@@ -1,4 +1,9 @@
-experiments/
+experiments/**
+!experiments/**/*.py
+!experimtens/**/*.yaml
+
 .venv
 .DS_Store
 
+# Ignore all HDF5 files
+*.h5
