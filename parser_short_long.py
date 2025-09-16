@@ -4,15 +4,14 @@ import numpy as np
 import pickle
 import h5py
 import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from constants import *
 from utils import *
 
-def parse_reference_fasta(reference_path: Path, result_path: Path):
-    start = time.perf_counter()
+def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
 
-    if result_path.exists():
-        print("Lookup table already exists.")
+    if result_path.exists() and not redo:
         return
 
     print("Parsing reference sequences...")
@@ -36,9 +35,9 @@ def parse_reference_fasta(reference_path: Path, result_path: Path):
     with h5py.File(result_path, "w", track_order=True) as f:
 
         for idx, (lineage, sequence) in enumerate(lin_seq_pair):
-            print(idx)
-            print(lineage)
-            print(sequence)
+            #print(idx)
+            #print(lineage)
+            #print(sequence)
 
             kmer_map = [[] for _ in range(KMER_COUNT)]
 
@@ -55,14 +54,7 @@ def parse_reference_fasta(reference_path: Path, result_path: Path):
             grp.create_dataset("flat_data", data=flat_data, dtype=np.uint32, compression="gzip")
             grp.create_dataset("offsets", data=offsets, dtype=np.uint32, compression="gzip")
 
-    print("Lookup table created.")
-
-    end = time.perf_counter()
-    print(f"Parsing and storing reference look up took {end - start} seconds.")
-
 def parse_query_fasta(query_path: Path):
-    start = time.perf_counter()
-
     query_names = []
     kmer_sets = []
     sequence_lengths = []
@@ -79,9 +71,6 @@ def parse_query_fasta(query_path: Path):
         "kmer_sets": kmer_sets,
         "sequence_lengths": sequence_lengths,
     }
-
-    end = time.perf_counter()
-    print(f"Parsing query sequences took {end - start} seconds.")
 
     return data
 
@@ -104,12 +93,27 @@ def calculate_intersection_size(flat_data: np.ndarray, offsets: np.ndarray, kmer
 
     return max_intersection_size
 
-def get_intersection_sizes(reference_path: Path, query_path: Path):
+def get_intersection_sizes(reference_path: Path, query_path: Path, redo: bool = False):
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
 
-    parse_reference_fasta(reference_path, result_path)
+    reference_start_time = time.perf_counter()
+    parse_reference_fasta(reference_path, result_path, redo)
+    reference_end_time = time.perf_counter()
+    reference_parse_time = reference_end_time - reference_start_time
+    if reference_parse_time < 1:
+        reference_parse_time = -1
+        print("Lookup table already exists.")
+    else:
+        print("Lookup table created.")
+        print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
 
+
+    query_start_time = time.perf_counter()
     query_data = parse_query_fasta(query_path)
+    query_end_time = time.perf_counter()
+    query_parse_time = query_end_time - query_start_time
+    print(f"Parsing query sequences took {query_parse_time} seconds.")
+
 
     query_names = query_data["query_names"]
     query_kmer_sets = query_data["kmer_sets"]
@@ -118,11 +122,14 @@ def get_intersection_sizes(reference_path: Path, query_path: Path):
     intersection_sizes = [[] for _ in range(len(query_names))]
     reference_names = []
 
+    calculate_intersection_sizes_start = time.perf_counter()
+    average_reference_processing_time = 0
     with h5py.File(result_path, "r") as f:
         for idx in f.keys():
-            start = time.perf_counter()
+            reference_processing_time_start = time.perf_counter()
             grp = f[idx]
             lineage_name = grp.attrs["name"]
+            print(idx, lineage_name)
             flat_data = grp["flat_data"][:]
             offsets = grp["offsets"][:]
 
@@ -131,12 +138,110 @@ def get_intersection_sizes(reference_path: Path, query_path: Path):
             for query_id, kmer_set in enumerate(query_kmer_sets):
                 intersection_sizes[query_id].append(calculate_intersection_size(flat_data, offsets, kmer_set, query_sequence_lengths[query_id]))
 
-            end = time.perf_counter()
-            print(f"Processing {idx} reference took {end - start} seconds.")
+            reference_processing_time_end = time.perf_counter()
+            reference_processing_time = reference_processing_time_end - reference_processing_time_start
+            print(f"Processing {idx} reference took {reference_processing_time} seconds.")
+            average_reference_processing_time += reference_processing_time
+        average_reference_processing_time /= len(f.keys())
+    calculate_intersection_sizes_end = time.perf_counter()
+    calculate_intersection_sizes_time = calculate_intersection_sizes_end - calculate_intersection_sizes_start
+    print(f"Calculating intersection sizes took {calculate_intersection_sizes_time} seconds.")
 
     result = []
 
     for query_id in range(len(query_names)):
         result.append((query_names[query_id], len(query_kmer_sets[query_id]), intersection_sizes[query_id]))
 
-    return result, reference_names
+    runtime_info = {
+        "reference_parse_time": reference_parse_time,
+        "query_parse_time": query_parse_time,
+        "calculate_intersection_sizes_time": calculate_intersection_sizes_time,
+        "average_reference_processing_time": average_reference_processing_time,
+    }
+
+    return result, reference_names, runtime_info
+
+def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths):
+    with h5py.File(result_path, "r") as f:
+        reference_processing_time_start = time.perf_counter()
+        grp = f[idx]
+        lineage_name = grp.attrs["name"]
+        flat_data = grp["flat_data"][:]
+        offsets = grp["offsets"][:]
+
+        intersection_sizes = []
+        for query_id, kmer_set in enumerate(query_kmer_sets):
+            size = calculate_intersection_size(flat_data, offsets, kmer_set, query_sequence_lengths[query_id])
+            intersection_sizes.append(size)
+
+        reference_processing_time_end = time.perf_counter()
+        reference_processing_time = reference_processing_time_end - reference_processing_time_start
+        print(f"Processing {idx} reference took {reference_processing_time} seconds.")
+
+    return idx, lineage_name, intersection_sizes
+
+def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, redo: bool = False, num_workers: int = None):
+    result_path = reference_path.with_name(reference_path.stem + "_data.h5")
+
+    reference_start_time = time.perf_counter()
+    parse_reference_fasta(reference_path, result_path, redo)
+    reference_end_time = time.perf_counter()
+    reference_parse_time = reference_end_time - reference_start_time
+    if reference_parse_time < 1:
+        reference_parse_time = -1
+        print("Lookup table already exists.")
+    else:
+        print("Lookup table created.")
+        print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
+
+
+    query_start_time = time.perf_counter()
+    query_data = parse_query_fasta(query_path)
+    query_end_time = time.perf_counter()
+    query_parse_time = query_end_time - query_start_time
+    print(f"Parsing query sequences took {query_parse_time} seconds.")
+
+
+    query_names = query_data["query_names"]
+    query_kmer_sets = query_data["kmer_sets"]
+    query_sequence_lengths = query_data["sequence_lengths"]
+
+    intersection_sizes = [[] for _ in range(len(query_names))]
+    reference_names = []
+
+    calculate_intersection_sizes_start = time.perf_counter()
+    reference_count = -1
+
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = []
+        with h5py.File(result_path, "r") as f:
+            reference_count = len(f.keys())
+            for idx in f.keys():
+                futures.append(executor.submit(
+                    process_reference, idx, result_path, query_kmer_sets, query_sequence_lengths
+                ))
+
+        for future in futures:
+            idx, lineage_name, sizes = future.result()
+            reference_names.append(lineage_name)
+            for query_id, size in enumerate(sizes):
+                intersection_sizes[query_id].append(size)
+
+    calculate_intersection_sizes_end = time.perf_counter()
+    calculate_intersection_sizes_time = calculate_intersection_sizes_end - calculate_intersection_sizes_start
+    average_reference_processing_time = calculate_intersection_sizes_time / reference_count
+    print(f"Calculating intersection sizes took {calculate_intersection_sizes_time} seconds.")
+
+    result = []
+
+    for query_id in range(len(query_names)):
+        result.append((query_names[query_id], len(query_kmer_sets[query_id]), intersection_sizes[query_id]))
+
+    runtime_info = {
+        "reference_parse_time": reference_parse_time,
+        "query_parse_time": query_parse_time,
+        "calculate_intersection_sizes_time": calculate_intersection_sizes_time,
+        "average_reference_processing_time": average_reference_processing_time,
+    }
+
+    return result, reference_names, runtime_info
