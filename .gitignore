@@ -2,6 +2,8 @@ experiments/**
 !experiments/**/*.py
 !experimtens/**/*.yaml
 
+validator/example/
+
 .venv
 .DS_Store
 
