@@ -4,6 +4,8 @@ experiments/**
 
 validator/example/
 
+raxtax/
+
 .venv
 .DS_Store
 
