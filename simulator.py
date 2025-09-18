@@ -88,8 +88,9 @@ def run_all_main():
         print(subdir)
         script_path = subdir / "main.py"
         if script_path.is_file():
-            print(f"Running {script_path}...")
-            subprocess.run(["python", str(script_path)], check=True)
+            module_path = ".".join(script_path.with_suffix("").parts)
+            print(f"Running {module_path}...")
+            subprocess.run(["python", "-m", module_path], check=True)
 
 if __name__ == "__main__":
     path = Path("experiments/random_testing/single_vs_quadruple_core/single/single5")
