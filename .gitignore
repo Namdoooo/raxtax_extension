@@ -8,6 +8,7 @@ raxtax/
 
 .old_venv
 .venv
+venv
 .DS_Store
 
 # Ignore all HDF5 files
