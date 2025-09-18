@@ -89,6 +89,8 @@ def run_all_main():
         script_path = subdir / "main.py"
         if script_path.is_file():
             rel_path = script_path.with_suffix("").relative_to(base_dir)
+            if "raxtax" in rel_parts:
+                rel_parts = rel_parts[rel_parts.index("raxtax") + 1:]
             module_path = ".".join(rel_path.parts)
             print(f"Running {module_path}...")
             subprocess.run(["python", "-m", module_path], check=True)
