@@ -12,3 +12,5 @@ raxtax/
 
 # Ignore all HDF5 files
 *.h5
+
+__pycache__/

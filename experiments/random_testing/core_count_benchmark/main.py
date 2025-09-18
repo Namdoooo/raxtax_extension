@@ -24,5 +24,5 @@ def visualize():
     plot_xy_data(core_counts, calculate_intersection_sizes_times, title=title, xlabel=xLabel, ylabel=yLabel, save_path=save_path)
 
 if __name__ == "__main__":
-    #run_all_main()
+    run_all_main()
     visualize()
