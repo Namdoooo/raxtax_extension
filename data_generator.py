@@ -57,6 +57,7 @@ def run_iqtree_simulation(path: Union[Path, str], leafcount: int, length: int, t
 def run_pygargammel_simulation(path: Union[Path, str], seed_pygargammel: int=None, min_length: int=100, fragment_count: int=50,
                                nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
     home = Path.home()
+    #pygargammel_path = home / "PycharmProjects" / "raxtax" / "pygargammel" / "pygargammel.py"
     pygargammel_path = home / "PycharmProjects" / "raxtax" / "pygargammel" / "pygargammel.py"
 
 
