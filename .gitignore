@@ -11,6 +11,8 @@ raxtax/
 venv
 .DS_Store
 
+.log
+
 # Ignore all HDF5 files
 *.h5
 
