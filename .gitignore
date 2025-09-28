@@ -6,9 +6,7 @@ validator/example/
 
 raxtax/
 
-.old_venv
-.venv
-venv
+.conda_venv
 .DS_Store
 
 .log

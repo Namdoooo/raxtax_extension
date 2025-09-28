@@ -1,3 +1,4 @@
+name: conda_venv
 channels:
   - conda-forge
   - bioconda
