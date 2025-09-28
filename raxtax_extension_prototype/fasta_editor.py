@@ -3,7 +3,7 @@ from Bio import SeqIO
 import random
 import os
 
-from utils import create_random_seed
+import raxtax_extension_prototype.utils as utils
 
 def phy_to_fasta(phy_path, fasta_path):
     with open(phy_path, 'r') as phy_file:
@@ -99,7 +99,7 @@ def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = N
 
     # Seed setzen
     if seed is None:
-        seed = create_random_seed()
+        seed = utils.create_random_seed()
         print(f"[INFO] Using randomly generated seed: {seed}")
     else:
         print(f"[INFO] Using provided seed: {seed}")

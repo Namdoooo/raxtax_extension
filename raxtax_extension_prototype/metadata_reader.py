@@ -1,14 +1,11 @@
-import json
 import os
 import re
-from importlib import metadata
 from pathlib import Path
 
 import numpy as np
 
-from viz_utils import plot_xy_data, plot_multiple_xy_array
-from utils import extract_trailing_number
-from utils import sort_lists_by_first
+import raxtax_extension_prototype.viz_utils as viz_utils
+import raxtax_extension_prototype.utils as utils
 
 
 def read_metadata_mutation_rate_boundary(root_dir: Path):
@@ -68,16 +65,16 @@ def get_mutation_rate_boundary_results(root_dir: Path):
     save_path_precisions = result_path / "mutation_rate_vs_precisions.png"
     save_path_f1s = result_path / "mutation_rate_vs_f1s.png"
 
-    plot_xy_data(mutation_rates, calculate_intersection_sizes_times, "Mutation Rate vs Calculate Intersection Sizes Times", "Mutation Rate (%)", "Calculate Intersections Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times)
+    viz_utils.plot_xy_data(mutation_rates, calculate_intersection_sizes_times, "Mutation Rate vs Calculate Intersection Sizes Times", "Mutation Rate (%)", "Calculate Intersections Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times)
 
-    plot_xy_data(mutation_rates, tps, "Mutation Rate vs True Positive Count", "Mutation Rate (%)", "True Positive Count", "lines", save_path_tps)
-    plot_xy_data(mutation_rates, mcs, "Mutation Rate vs Misclassified Count", "Mutation Rate (%)", "Misclassified Count", "lines", save_path_mcs)
-    plot_xy_data(mutation_rates, fps, "Mutation Rate vs False Positive Count", "Mutation Rate (%)", "False Positive Count", "lines", save_path_fps)
-    plot_xy_data(mutation_rates, fns, "Mutation Rate vs False Negative Count", "Mutation Rate (%)", "False Negative Count", "lines", save_path_fns)
+    viz_utils.plot_xy_data(mutation_rates, tps, "Mutation Rate vs True Positive Count", "Mutation Rate (%)", "True Positive Count", "lines", save_path_tps)
+    viz_utils.plot_xy_data(mutation_rates, mcs, "Mutation Rate vs Misclassified Count", "Mutation Rate (%)", "Misclassified Count", "lines", save_path_mcs)
+    viz_utils.plot_xy_data(mutation_rates, fps, "Mutation Rate vs False Positive Count", "Mutation Rate (%)", "False Positive Count", "lines", save_path_fps)
+    viz_utils.plot_xy_data(mutation_rates, fns, "Mutation Rate vs False Negative Count", "Mutation Rate (%)", "False Negative Count", "lines", save_path_fns)
 
-    plot_xy_data(mutation_rates, recalls, "Mutation Rate vs Recall", "Mutation Rate (%)", "Recall (%)", "lines", save_path_recalls)
-    plot_xy_data(mutation_rates, precisions, "Mutation Rate vs Precision", "Mutation Rate (%)", "Precision (%)", "lines", save_path_precisions)
-    plot_xy_data(mutation_rates, f1s, "Mutation Rate vs F1 Score", "Mutation Rate (%)", "F1 Score (%)", "lines", save_path_f1s)
+    viz_utils.plot_xy_data(mutation_rates, recalls, "Mutation Rate vs Recall", "Mutation Rate (%)", "Recall (%)", "lines", save_path_recalls)
+    viz_utils.plot_xy_data(mutation_rates, precisions, "Mutation Rate vs Precision", "Mutation Rate (%)", "Precision (%)", "lines", save_path_precisions)
+    viz_utils.plot_xy_data(mutation_rates, f1s, "Mutation Rate vs F1 Score", "Mutation Rate (%)", "F1 Score (%)", "lines", save_path_f1s)
 
 def read_metadata_tree_height_boundary(root_dir: Path):
     metadata = {}
@@ -146,16 +143,16 @@ def get_tree_height_boundary_results(root_dir: Path):
     save_path_precisions = result_path / "tree_height_vs_precisions.png"
     save_path_f1s = result_path / "tree_height_vs_f1s.png"
 
-    plot_xy_data(tree_heights, calculate_intersection_sizes_times, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersections Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times)
+    viz_utils.plot_xy_data(tree_heights, calculate_intersection_sizes_times, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersections Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times)
 
-    plot_xy_data(tree_heights, tps, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps)
-    plot_xy_data(tree_heights, mcs, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs)
-    plot_xy_data(tree_heights, fps, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps)
-    plot_xy_data(tree_heights, fns, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns)
+    viz_utils.plot_xy_data(tree_heights, tps, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps)
+    viz_utils.plot_xy_data(tree_heights, mcs, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs)
+    viz_utils.plot_xy_data(tree_heights, fps, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps)
+    viz_utils.plot_xy_data(tree_heights, fns, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns)
 
-    plot_xy_data(tree_heights, recalls, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls)
-    plot_xy_data(tree_heights, precisions, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions)
-    plot_xy_data(tree_heights, f1s, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s)
+    viz_utils.plot_xy_data(tree_heights, recalls, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls)
+    viz_utils.plot_xy_data(tree_heights, precisions, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions)
+    viz_utils.plot_xy_data(tree_heights, f1s, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s)
 
 def marginalize_tree_height_results(root_dir: Path, folders: list[str]):
 
@@ -203,16 +200,16 @@ def marginalize_tree_height_results(root_dir: Path, folders: list[str]):
     save_path_precisions_separate_series = result_path / "tree_height_vs_precisions_separate_series.png"
     save_path_f1s_separate_series = result_path / "tree_height_vs_f1s_separate_series.png"
 
-    plot_multiple_xy_array(tree_heights, calculate_intersection_sizes_times, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, calculate_intersection_sizes_times, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_separate_series)
 
-    plot_multiple_xy_array(tree_heights, tps, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps_separate_series)
-    plot_multiple_xy_array(tree_heights, mcs, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs_separate_series)
-    plot_multiple_xy_array(tree_heights, fps, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps_separate_series)
-    plot_multiple_xy_array(tree_heights, fns, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, tps, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, mcs, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, fps, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, fns, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns_separate_series)
 
-    plot_multiple_xy_array(tree_heights, recalls, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls_separate_series)
-    plot_multiple_xy_array(tree_heights, precisions, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions_separate_series)
-    plot_multiple_xy_array(tree_heights, f1s, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, recalls, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, precisions, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions_separate_series)
+    viz_utils.plot_multiple_xy_array(tree_heights, f1s, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s_separate_series)
 
     # save marginalized data
     tree_heights_marginalized = np.mean(tree_heights, axis=0)
@@ -240,16 +237,16 @@ def marginalize_tree_height_results(root_dir: Path, folders: list[str]):
     save_path_precisions_marginalized = result_path / "tree_height_vs_precisions_marginalized.png"
     save_path_f1s_marginalized = result_path / "tree_height_vs_f1s_marginalized.png"
 
-    plot_xy_data(tree_heights_marginalized, calculate_intersection_sizes_times_marginalized, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, calculate_intersection_sizes_times_marginalized, "Tree Height vs Calculate Intersection Sizes Times", "Tree Height", "Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_marginalized)
 
-    plot_xy_data(tree_heights_marginalized, tps_marginalized, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps_marginalized)
-    plot_xy_data(tree_heights_marginalized, mcs_marginalized, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs_marginalized)
-    plot_xy_data(tree_heights_marginalized, fps_marginalized, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps_marginalized)
-    plot_xy_data(tree_heights_marginalized, fns_marginalized, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, tps_marginalized, "Tree Height vs True Positive Count", "Tree Height", "True Positive Count", "lines", save_path_tps_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, mcs_marginalized, "Tree Height vs Misclassified Count", "Tree Height", "Misclassified Count", "lines", save_path_mcs_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, fps_marginalized, "Tree Height vs False Positive Count", "Tree Height", "False Positive Count", "lines", save_path_fps_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, fns_marginalized, "Tree Height vs False Negative Count", "Tree Height", "False Negative Count", "lines", save_path_fns_marginalized)
 
-    plot_xy_data(tree_heights_marginalized, recalls_marginalized, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls_marginalized)
-    plot_xy_data(tree_heights_marginalized, precisions_marginalized, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions_marginalized)
-    plot_xy_data(tree_heights_marginalized, f1s_marginalized, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, recalls_marginalized, "Tree Height vs Recall", "Tree Height", "Recall (%)", "lines", save_path_recalls_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, precisions_marginalized, "Tree Height vs Precisions", "Tree Height", "Precision (%)", "lines", save_path_precisions_marginalized)
+    viz_utils.plot_xy_data(tree_heights_marginalized, f1s_marginalized, "Tree Height vs F1 Score", "Tree Height", "F1 Score (%)", "lines", save_path_f1s_marginalized)
 
 def marginalize_mutation_rate_results(root_dir: Path, folders: list[str]):
 
@@ -300,16 +297,16 @@ def marginalize_mutation_rate_results(root_dir: Path, folders: list[str]):
     save_path_precisions_separate_series = result_path / "mutation_rate_vs_precisions_separate_series.png"
     save_path_f1s_separate_series = result_path / "mutation_rate_vs_f1s_separate_series.png"
 
-    plot_multiple_xy_array(mutation_rates, calculate_intersection_sizes_times,"Mutation Rate vs Calculate Intersection Sizes Times","Mutation Rate","Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, calculate_intersection_sizes_times,"Mutation Rate vs Calculate Intersection Sizes Times","Mutation Rate","Calculate Intersection Sizes Time (s)", "lines", save_path_calculate_intersection_sizes_times_separate_series)
 
-    plot_multiple_xy_array(mutation_rates, tps, "Mutation Rate vs True Positive Count", "Mutation Rate","True Positive Count", "lines", save_path_tps_separate_series)
-    plot_multiple_xy_array(mutation_rates, mcs, "Mutation Rate vs Misclassified Count", "Mutation Rate","Misclassified Count", "lines", save_path_mcs_separate_series)
-    plot_multiple_xy_array(mutation_rates, fps, "Mutation Rate vs False Positive Count", "Mutation Rate","False Positive Count", "lines", save_path_fps_separate_series)
-    plot_multiple_xy_array(mutation_rates, fns, "Mutation Rate vs False Negative Count", "Mutation Rate","False Negative Count", "lines", save_path_fns_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, tps, "Mutation Rate vs True Positive Count", "Mutation Rate","True Positive Count", "lines", save_path_tps_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, mcs, "Mutation Rate vs Misclassified Count", "Mutation Rate","Misclassified Count", "lines", save_path_mcs_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, fps, "Mutation Rate vs False Positive Count", "Mutation Rate","False Positive Count", "lines", save_path_fps_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, fns, "Mutation Rate vs False Negative Count", "Mutation Rate","False Negative Count", "lines", save_path_fns_separate_series)
 
-    plot_multiple_xy_array(mutation_rates, recalls, "Mutation Rate vs Recall", "Mutation Rate", "Recall (%)", "lines",save_path_recalls_separate_series)
-    plot_multiple_xy_array(mutation_rates, precisions, "Mutation Rate vs Precisions", "Mutation Rate", "Precision (%)","lines", save_path_precisions_separate_series)
-    plot_multiple_xy_array(mutation_rates, f1s, "Mutation Rate vs F1 Score", "Mutation Rate", "F1 Score (%)", "lines",save_path_f1s_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, recalls, "Mutation Rate vs Recall", "Mutation Rate", "Recall (%)", "lines",save_path_recalls_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, precisions, "Mutation Rate vs Precisions", "Mutation Rate", "Precision (%)","lines", save_path_precisions_separate_series)
+    viz_utils.plot_multiple_xy_array(mutation_rates, f1s, "Mutation Rate vs F1 Score", "Mutation Rate", "F1 Score (%)", "lines",save_path_f1s_separate_series)
 
     # save marginalized data
     mutation_rates_marginalized = np.mean(mutation_rates, axis=0)
@@ -336,16 +333,16 @@ def marginalize_mutation_rate_results(root_dir: Path, folders: list[str]):
     save_path_precisions_marginalized = result_path / "mutation_rates_vs_precisions_marginalized.png"
     save_path_f1s_marginalized = result_path / "mutation_rates_vs_f1s_marginalized.png"
 
-    plot_xy_data(mutation_rates_marginalized, calculate_intersection_sizes_times_marginalized, "Tree Height vs Calculate Intersection Sizes Times", "Mutation Rate", "Calculate Intersection Sizes Time (s)","lines", save_path_calculate_intersection_sizes_times_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, calculate_intersection_sizes_times_marginalized, "Tree Height vs Calculate Intersection Sizes Times", "Mutation Rate", "Calculate Intersection Sizes Time (s)","lines", save_path_calculate_intersection_sizes_times_marginalized)
 
-    plot_xy_data(mutation_rates_marginalized, tps_marginalized, "Mutation Rate vs True Positive Count", "Mutation Rate","True Positive Count", "lines", save_path_tps_marginalized)
-    plot_xy_data(mutation_rates_marginalized, mcs_marginalized, "Mutation Rate vs Misclassified Count", "Mutation Rate","Misclassified Count", "lines", save_path_mcs_marginalized)
-    plot_xy_data(mutation_rates_marginalized, fps_marginalized, "Mutation Rate vs False Positive Count", "Mutation Rate","False Positive Count", "lines", save_path_fps_marginalized)
-    plot_xy_data(mutation_rates_marginalized, fns_marginalized, "Mutation Rate vs False Negative Count", "Mutation Rate","False Negative Count", "lines", save_path_fns_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, tps_marginalized, "Mutation Rate vs True Positive Count", "Mutation Rate","True Positive Count", "lines", save_path_tps_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, mcs_marginalized, "Mutation Rate vs Misclassified Count", "Mutation Rate","Misclassified Count", "lines", save_path_mcs_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, fps_marginalized, "Mutation Rate vs False Positive Count", "Mutation Rate","False Positive Count", "lines", save_path_fps_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, fns_marginalized, "Mutation Rate vs False Negative Count", "Mutation Rate","False Negative Count", "lines", save_path_fns_marginalized)
 
-    plot_xy_data(mutation_rates_marginalized, recalls_marginalized, "Mutation Rate vs Recall", "Mutation Rate", "Recall (%)","lines", save_path_recalls_marginalized)
-    plot_xy_data(mutation_rates_marginalized, precisions_marginalized, "Mutation Rate vs Precisions", "Mutation Rate","Precision (%)", "lines", save_path_precisions_marginalized)
-    plot_xy_data(mutation_rates_marginalized, f1s_marginalized, "Mutation Rate vs F1 Score", "Mutation Rate", "F1 Score (%)","lines", save_path_f1s_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, recalls_marginalized, "Mutation Rate vs Recall", "Mutation Rate", "Recall (%)","lines", save_path_recalls_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, precisions_marginalized, "Mutation Rate vs Precisions", "Mutation Rate","Precision (%)", "lines", save_path_precisions_marginalized)
+    viz_utils.plot_xy_data(mutation_rates_marginalized, f1s_marginalized, "Mutation Rate vs F1 Score", "Mutation Rate", "F1 Score (%)","lines", save_path_f1s_marginalized)
 
 def get_metadata_variable(root_dir: Path, variable_name: str):
     metadata_path = root_dir / "metadata.out"
@@ -371,10 +368,10 @@ def parse_metadata_independent_dependent_variable(root_dir: Path, dependent_vari
             dependent_variable = float(get_metadata_variable(Path(dirpath), dependent_variable_str))
             dependent_variables.append(dependent_variable)
 
-            independent_variable = extract_trailing_number(Path(dirpath).parent)
+            independent_variable = utils.extract_trailing_number(Path(dirpath).parent)
             independent_variables.append(independent_variable)
 
-    independent_variables, dependent_variables = sort_lists_by_first(independent_variables, dependent_variables)
+    independent_variables, dependent_variables = utils.sort_lists_by_first(independent_variables, dependent_variables)
     independent_variables *= independent_variable_factor
     return independent_variables, dependent_variables
 

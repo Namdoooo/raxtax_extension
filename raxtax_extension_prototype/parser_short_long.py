@@ -1,13 +1,12 @@
 from Bio import SeqIO
-from pathlib import Path
-import numpy as np
-import pickle
 import h5py
 import time
-from concurrent.futures import ProcessPoolExecutor, as_completed
+import numpy as np
+from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor
 
-from constants import *
-from utils import *
+import raxtax_extension_prototype.constants as constants
+import raxtax_extension_prototype.utils as utils
 
 def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
 
@@ -39,10 +38,10 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
             #print(lineage)
             #print(sequence)
 
-            kmer_map = [[] for _ in range(KMER_COUNT)]
+            kmer_map = [[] for _ in range(constants.KMER_COUNT)]
 
-            for i in range(len(sequence) - K + 1):
-                kmer = kmer_to_index(sequence[i:i + K])
+            for i in range(len(sequence) - constants.K + 1):
+                kmer = utils.kmer_to_index(sequence[i:i + constants.K])
                 kmer_map[kmer].append(i)
 
             flat_data = np.concatenate(kmer_map)
@@ -63,7 +62,7 @@ def parse_query_fasta(query_path: Path):
         query_names.append(record.name)
         seq = str(record.seq).upper()
 
-        kmer_sets.append(sequence_to_kmer_set(seq))
+        kmer_sets.append(utils.sequence_to_kmer_set(seq))
         sequence_lengths.append(len(seq))
 
     data = {
@@ -83,7 +82,7 @@ def calculate_intersection_size(flat_data: np.ndarray, offsets: np.ndarray, kmer
         pre_index = -1
         for index in flat_data[offsets[kmer]:offsets[kmer + 1]]:
             index = int(index)
-            for i in range(max(pre_index + 1, index - window_size + K), index + 1):
+            for i in range(max(pre_index + 1, index - window_size + constants.K), index + 1):
                 if i in window_intersection_sizes:
                     window_intersection_sizes[i] += 1
                 else:

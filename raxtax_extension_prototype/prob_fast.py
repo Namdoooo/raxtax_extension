@@ -1,6 +1,5 @@
 import numpy as np
-from scipy.special import comb
-from scipy.special import gammaln
+from scipy import special
 
 #calculates pmf for one query sequence
 def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarray:
@@ -17,7 +16,7 @@ def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarr
         pmf[-1] = 1
         return pmf
 
-    denominator = comb(query_set_size + t - 1, t)
+    denominator = special.comb(query_set_size + t - 1, t)
 
     nominator1_n = match_count + 0 - 1
     nominator1_k = 0
@@ -25,7 +24,7 @@ def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarr
     nominator2_n = query_set_size - match_count + (t - 0) - 1
     nominator2_k = t - 0
 
-    nominator = comb(nominator1_n, nominator1_k) * comb(nominator2_n, nominator2_k)
+    nominator = special.comb(nominator1_n, nominator1_k) * special.comb(nominator2_n, nominator2_k)
 
     pmf[0] = nominator / denominator
     #print("denominator: ", denominator)
@@ -55,7 +54,7 @@ def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarr
 def log_binom(n: int, k: int):
     if k < 0 or k > n:
         raise ValueError("k must be between 0 and n")
-    return gammaln(n + 1) - gammaln(k + 1) - gammaln(n - k + 1)
+    return special.gammaln(n + 1) - special.gammaln(k + 1) - special.gammaln(n - k + 1)
 
 def calculate_pmf(match_count: int, query_set_size: int, t: int) -> np.ndarray:
     pmf_log = np.full(t + 1, -np.inf)

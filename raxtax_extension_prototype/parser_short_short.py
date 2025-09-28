@@ -1,12 +1,9 @@
 from Bio import SeqIO
 from pathlib import Path
-import numpy as np
 import pickle
 
 from tree import Tree
-from utils import sequence_to_kmer_set
-
-from constants import *
+import raxtax_extension_prototype.utils as utils
 
 def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool = False):
     if result_path.exists() & (not redo):
@@ -52,7 +49,7 @@ def parse_query_fasta(query_path: Path):
         query_names.append(record.name)
         seq = str(record.seq).upper()
 
-        kmer_sets.append(sequence_to_kmer_set(seq))
+        kmer_sets.append(utils.sequence_to_kmer_set(seq))
 
         sequence_lengths.append(len(seq))
 

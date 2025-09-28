@@ -1,8 +1,7 @@
 from enum import Enum
 
-from utils import sequence_to_kmer_set
-
-from constants import KMER_COUNT
+import raxtax_extension_prototype.utils as utils
+import raxtax_extension_prototype.constants as constants
 
 class NodeType(Enum):
     INNER = "INNER"
@@ -46,7 +45,7 @@ class Tree:
         self.root = Node("", 0, NodeType.INNER)
         self.lineages = []
         self.num_tips = 0
-        self.kmer_map: list[list[int]] = [[] for _ in range(KMER_COUNT)]
+        self.kmer_map: list[list[int]] = [[] for _ in range(constants.KMER_COUNT)]
         self._build_tree(lineages, sequences)
 
     def _build_tree(self, lineages: list[str], sequences: list[str]):
@@ -71,7 +70,7 @@ class Tree:
             current_node.add_child(Node(sequence, idx, NodeType.SEQUENCE))
             current_node.confidence_range = (current_node.confidence_range[0], idx + 1)
 
-            for kmer in sequence_to_kmer_set(sequence):
+            for kmer in utils.sequence_to_kmer_set(sequence):
                 self.kmer_map[kmer].append(idx)
 
     def print(self):

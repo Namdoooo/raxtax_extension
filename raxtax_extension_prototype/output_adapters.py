@@ -1,15 +1,14 @@
 import time
-from itertools import groupby
-from operator import itemgetter
+import itertools
+import operator
 from pathlib import Path
 
-from prob_fast import calculate_confidence_scores
-
+import raxtax_extension_prototype.prob_fast as prob_fast
 
 def evaluate_confidence_scores(names, prob):
 
     combined = list(zip(names, prob))
-    result = [(key, sum(p for _, p in group)) for key, group in groupby(combined, key=itemgetter(0))]
+    result = [(key, sum(p for _, p in group)) for key, group in itertools.groupby(combined, key=operator.itemgetter(0))]
     sorted_result = sorted([(n, float(round(p, 2))) for n, p in result], key=lambda x: x[1], reverse=True)
 
     filtered_result = [(n, p) for n, p in sorted_result if p >= 0.005]
@@ -48,7 +47,7 @@ def output_sim_miseq(results, reference_names, runtime_info, result_dir: Path, c
             print(intersection_sizes)
 
             start_calculation_prob_time = time.perf_counter()
-            prob = calculate_confidence_scores(intersection_sizes, t, query_set_size)
+            prob = prob_fast.calculate_confidence_scores(intersection_sizes, t, query_set_size)
             end_calculation_prob_time = time.perf_counter()
             calculation_prob_time = end_calculation_prob_time - start_calculation_prob_time
 
@@ -122,7 +121,7 @@ def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_e
             print(intersection_sizes)
 
             start_calculation_prob_time = time.perf_counter()
-            prob = calculate_confidence_scores(intersection_sizes, t, query_set_size)
+            prob = prob_fast.calculate_confidence_scores(intersection_sizes, t, query_set_size)
             end_calculation_prob_time = time.perf_counter()
             calculation_prob_time = end_calculation_prob_time - start_calculation_prob_time
 
