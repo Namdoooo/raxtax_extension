@@ -78,7 +78,7 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
         print(result.stderr)
 
 def simulate_references_queries(base_dir: Path, leafcount: int, length: int, treeheight: float, query_count: int, iqtree_seed: int=None, pygargammel_seed: int=None, query_selection_seed: int=None,
-                                min_length: int=100, fragment_count: int=50):
+                                min_length: int=100, fragment_count: int=50, nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
     print(f"[INFO] Create references and queries at {base_dir}, with leafcount={leafcount}, length={length}, treeheight={treeheight}")
 
 
@@ -104,7 +104,8 @@ def simulate_references_queries(base_dir: Path, leafcount: int, length: int, tre
     if query_path.exists():
         print("[INFO] queries.fasta already exists, skipping creation.")
     else:
-        run_pygargammel_simulation(query_dir, references_fasta_path, pygargammel_seed, min_length=min_length, fragment_count=fragment_count)
+        run_pygargammel_simulation(query_dir, references_fasta_path, pygargammel_seed, min_length, fragment_count,
+                                   nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
 
     query_new_path = query_dir / f"queries_{query_count}.fasta"
     x = (leafcount * fragment_count) // query_count
@@ -123,11 +124,18 @@ def simulate_references_queries_with_config(config_path: Path, base_dir: Path):
     length = config["sequence_length"]
     treeheight = config["tree_height"]
     query_count = config["query_count"]
+    query_min_length = config["query_min_length"]
+    fragment_count = config["fragment_count"]
+    nick_freq = config["nick_freq"]
+    overhang_parameter = config["overhang_parameter"]
+    double_strand_deamination = config["double_strand_deamination"]
+    single_strand_deamination = config["single_strand_deamination"]
     iqtree_seed = config.get("iqtree_seed", None)
     pygargammel_seed = config.get("pygargammel_seed", None)
     query_selection_seed = config.get("query_selection_seed", None)
 
-    simulate_references_queries(base_dir, leafcount, length, treeheight, query_count, iqtree_seed, pygargammel_seed, query_selection_seed)
+    simulate_references_queries(base_dir, leafcount, length, treeheight, query_count, iqtree_seed, pygargammel_seed, query_selection_seed,
+                                query_min_length, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
 
 if __name__ == "__main__":
     seeds = []

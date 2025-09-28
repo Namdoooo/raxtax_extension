@@ -114,7 +114,7 @@ def compare_files(file1: str, file2: str) -> bool:
             identical = False
 
     if len1 != len2:
-        print("\n⚠️ Files have different lengths.")
+        print("\n Files have different lengths.")
         if len1 > len2:
             for lineno in range(min_len, len1):
                 print(f"Extra line in {file1} at {lineno + 1}: {lines1[lineno].rstrip()}")
@@ -147,4 +147,8 @@ def create_folder(path: Union[Path, str]) -> None:
 if __name__ == "__main__":
     file1 = "../experiments/small_test/test1/results_references_queries_200/results.out"
     file2 = "../experiments/small_test/test2/results_references_queries_200/results.out"
+    compare_files(file1, file2)
+
+    file1 = "../experiments/small_test/test1/queries.fasta"
+    file2 = "../experiments/small_test/test2//queries/queries.fasta"
     compare_files(file1, file2)

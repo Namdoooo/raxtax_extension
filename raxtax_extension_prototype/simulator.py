@@ -7,56 +7,6 @@ import inspect
 import raxtax_extension_prototype.data_generator as data_generator
 import raxtax_extension_prototype.parser_short_long as parser
 import raxtax_extension_prototype.output_adapters as output_adapters
-import raxtax_extension_prototype.utils as utils
-
-def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=0):
-    config_path = base_dir / "config.yaml"
-
-    # Write config only if redo_config is True or file does not exist
-    if redo_config or not config_path.exists():
-
-        iqtree_seed = utils.create_random_seed()
-        pygargammel_seed = utils.create_random_seed()
-        query_selection_seed = utils.create_random_seed()
-
-        config_data = {
-            "leaf_count": leaf_count,
-            "sequence_length": sequence_length,
-            "tree_height": tree_height,
-            "query_count": query_count,
-            "core_count": core_count,
-            "iqtree_seed": iqtree_seed,
-            "pygargammel_seed": pygargammel_seed,
-            "query_selection_seed": query_selection_seed,
-        }
-
-        with config_path.open("w") as f:
-            yaml.dump(config_data, f, sort_keys=False)
-
-        if not config_path.exists():
-            print(f"[INFO] Created new configuration file at {config_path}")
-        elif redo_config:
-            print(f"[INFO] Re-created configuration file at {config_path}")
-
-        print("    Parameters:")
-        print("        base_dir: " + str(base_dir))
-        print("        redo config: " + str(redo_config))
-        print("        leaf_count: " + str(leaf_count))
-        print("        sequence_length: " + str(sequence_length))
-        print("        tree_height: " + str(tree_height))
-        print("        query_count: " + str(query_count))
-        print("        core_count: " + str(core_count))
-    else:
-        print(f"[INFO] Configuration file already exists at {config_path}, skipping creation")
-
-    return config_path
-
-def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=0):
-
-    # Get the path of the file that called this function
-    base_dir = Path(inspect.stack()[1].filename).resolve().parent
-
-    return create_config_at_path(base_dir, redo_config, leaf_count, sequence_length, tree_height, query_count, core_count)
 
 def run_simulation(config_dir: Path | None = None):
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
@@ -108,7 +58,4 @@ def run_all_main():
             subprocess.run(["python", "-m", module_path], check=True)
 
 if __name__ == "__main__":
-    for i in range(3, 9):
-        path = Path("../experiments/random_testing/core_count_benchmark1/core" + str(i))
-        print(path)
-        create_config_at_path(path, redo_config=False, core_count=i)
+    pass
