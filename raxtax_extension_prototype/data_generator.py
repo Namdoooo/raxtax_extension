@@ -1,37 +1,23 @@
 import subprocess
 import yaml
 import random
-from typing import Union
 
 from pathlib import Path
 
 import raxtax_extension_prototype.fasta_editor as fasta_editor
+import raxtax_extension_prototype.utils as utils
 
+def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, treeheight: float, seed_iqtree: int=None):
+    print("[INFO] Create reference data.")
 
-def float_to_string_without_point(num: float) -> str:
-    # Erst als String mit möglichst wenig Nachkommastellen darstellen
-    s = format(num, 'f').rstrip('0').rstrip('.')
-    return s.replace(".", "")
-
-def create_folder(path: Union[Path, str]) -> None:
-
-    folder_path = Path(path)
-    folder_path.mkdir(parents=True, exist_ok=True)
-
-    print(f"Ordner erstellt oder vorhanden: {folder_path.resolve()}")
-
-def run_iqtree_simulation(path: Union[Path, str], leafcount: int, length: int, treeheight: float, seed_iqtree: int=None):
-    # Pfad als Path-Objekt absichern
-    alisim_path = Path(path)
-
-    if not alisim_path.parent.exists():
-        print(f"Pfad nicht gefunden: {alisim_path.parent}")
+    if not reference_path.parent.exists():
+        print(f"[ERROR] Path not found: {reference_path.parent}")
         return
 
     # Kommando zusammensetzen
     command = [
         "iqtree3",
-        "--alisim", str(alisim_path),
+        "--alisim", str(reference_path),
         "--model", "GTR+G+I",
         "--tree", f"RANDOM{{yh/{leafcount}}}",
         "--length", str(length),
@@ -42,7 +28,7 @@ def run_iqtree_simulation(path: Union[Path, str], leafcount: int, length: int, t
     if seed_iqtree is not None:
         command += ["--seed", str(seed_iqtree)]
 
-    print("Führe aus:", " ".join(command))
+    print("[INFO] Execute :", " ".join(command))
     result = subprocess.run(command, capture_output=True, text=True)
 
     # Ausgabe anzeigen
@@ -52,26 +38,25 @@ def run_iqtree_simulation(path: Union[Path, str], leafcount: int, length: int, t
         print("Fehler:")
         print(result.stderr)
 
-def run_pygargammel_simulation(path: Union[Path, str], seed_pygargammel: int=None, min_length: int=100, fragment_count: int=50,
+    print("[INFO] reference.phy data created.")
+
+def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_pygargammel: int=None, min_length: int=100, fragment_count: int=50,
                                nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
 
-    base_dir = Path(__file__).resolve().parent
-    pygargammel_path = base_dir.parent / "pygargammel" / "pygargammel.py"
+    pygargammel_path = Path(__file__).resolve().parent.parent / "pygargammel" / "pygargammel.py"
 
+    queries_path = queries_dir / "queries.fasta"
 
-    data_path = Path(path)
-    output_path = data_path.parent / "queries.fasta"
-
-    pygargammel_log_path = data_path.parent / "pygargammel.log"
+    pygargammel_log_path = queries_dir / "pygargammel.log"
 
     command = [
         "python", str(pygargammel_path),
-        "--fasta", str(data_path),
+        "--fasta", str(references_path),
         "--nick-freq", str(nick_freq),
         "--overhang-parameter", str(overhang_parameter),
         "--double-strand-deamination", str(double_strand_deamination),
         "--single-strand-deamination", str(single_strand_deamination),
-        "--output", str(output_path),
+        "--output", str(queries_path),
         "--log", str(pygargammel_log_path),
         "--min-length", str(min_length),
         f"--max-fragments={fragment_count}",
@@ -92,34 +77,36 @@ def run_pygargammel_simulation(path: Union[Path, str], seed_pygargammel: int=Non
         print("Fehler:")
         print(result.stderr)
 
-def simulate_references_queries(path_str: Union[Path, str], leafcount: int, length: int, treeheight: float, query_count: int, iqtree_seed: int=None, pygargammel_seed: int=None, query_selection_seed: int=None,
+def simulate_references_queries(base_dir: Path, leafcount: int, length: int, treeheight: float, query_count: int, iqtree_seed: int=None, pygargammel_seed: int=None, query_selection_seed: int=None,
                                 min_length: int=100, fragment_count: int=50):
-    path = Path(path_str)
-    print(f"Create referenes and queries at {path}, with leafcount={leafcount}, length={length}, treeheight={treeheight}")
+    print(f"[INFO] Create references and queries at {base_dir}, with leafcount={leafcount}, length={length}, treeheight={treeheight}")
 
-    create_folder(path)
 
-    alisim_path = Path(path) / f"references_s{leafcount}_t{float_to_string_without_point(treeheight)}"
+    reference_dir = base_dir / "references"
+    utils.create_folder(reference_dir)
 
-    reference_fasta_path = Path(path) / "references.fasta"
+    reference_path = reference_dir / f"references_s{leafcount}_t{utils.float_to_string_without_point(treeheight)}"
+    references_fasta_path = reference_dir / "references.fasta"
 
-    if reference_fasta_path.exists():
+    if references_fasta_path.exists():
         print("[INFO] reference.fasta already exists, skipping creation.")
     else:
-        run_iqtree_simulation(alisim_path, leafcount, length, treeheight, iqtree_seed)
+        run_iqtree_simulation(reference_path, leafcount, length, treeheight, iqtree_seed)
+
+        reference_phy_path = reference_dir / f"references_s{leafcount}_t{utils.float_to_string_without_point(treeheight)}.phy"
+        fasta_editor.phy_to_fasta(reference_phy_path, references_fasta_path)
         print("[INFO] reference.fasta created.")
 
-        phy_path = path / f"references_s{leafcount}_t{float_to_string_without_point(treeheight)}.phy"
-        fasta_editor.phy_to_fasta(phy_path, reference_fasta_path)
-
-    query_path = path / f"queries.fasta"
+    query_dir = base_dir / "queries"
+    utils.create_folder(query_dir)
+    query_path = query_dir / f"queries.fasta"
 
     if query_path.exists():
         print("[INFO] queries.fasta already exists, skipping creation.")
     else:
-        run_pygargammel_simulation(reference_fasta_path, pygargammel_seed, min_length=min_length, fragment_count=fragment_count)
+        run_pygargammel_simulation(query_dir, references_fasta_path, pygargammel_seed, min_length=min_length, fragment_count=fragment_count)
 
-    query_new_path = path / f"queries_{query_count}.fasta"
+    query_new_path = query_dir / f"queries_{query_count}.fasta"
     x = (leafcount * fragment_count) // query_count
 
     if query_new_path.exists():
@@ -127,11 +114,9 @@ def simulate_references_queries(path_str: Union[Path, str], leafcount: int, leng
     else:
         fasta_editor.sample_fasta_every_x(query_path, query_new_path, x, query_selection_seed)
 
-def simulate_references_queries_with_config(config_path: Union[Path, str]):
-    path = Path(config_path)
-
+def simulate_references_queries_with_config(config_path: Path, base_dir: Path):
     # Load config.yaml
-    with open(path, "r") as file:
+    with open(config_path, "r") as file:
         config = yaml.safe_load(file)
 
     leafcount = config["leaf_count"]
@@ -142,7 +127,7 @@ def simulate_references_queries_with_config(config_path: Union[Path, str]):
     pygargammel_seed = config.get("pygargammel_seed", None)
     query_selection_seed = config.get("query_selection_seed", None)
 
-    simulate_references_queries(path.parent, leafcount, length, treeheight, query_count, iqtree_seed, pygargammel_seed, query_selection_seed)
+    simulate_references_queries(base_dir, leafcount, length, treeheight, query_count, iqtree_seed, pygargammel_seed, query_selection_seed)
 
 if __name__ == "__main__":
     seeds = []

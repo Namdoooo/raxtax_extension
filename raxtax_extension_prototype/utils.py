@@ -130,56 +130,21 @@ def compare_files(file1: str, file2: str) -> bool:
 
     return identical
 
+
+def float_to_string_without_point(num: float) -> str:
+    # Erst als String mit möglichst wenig Nachkommastellen darstellen
+    s = format(num, 'f').rstrip('0').rstrip('.')
+    return s.replace(".", "")
+
+
+def create_folder(path: Union[Path, str]) -> None:
+
+    folder_path = Path(path)
+    folder_path.mkdir(parents=True, exist_ok=True)
+
+    #print(f"[INFO] directory created or existed: {folder_path.resolve()}")
+
 if __name__ == "__main__":
-    """
-    file1 = "../experiments/refactor_test/core4/queries_200.fasta"
-    file2 = "../experiments/refactor_test/core4_repeat/queries_200.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test/core4/queries.fasta"
-    file2 = "../experiments/refactor_test/core4_repeat/queries.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test/core4/references.fasta"
-    file2 = "../experiments/refactor_test/core4_repeat/references.fasta"
-    compare_files(file1, file2)
-
-
-
-    file1 = "../experiments/refactor_test_hits/core4/queries_200.fasta"
-    file2 = "../experiments/refactor_test_hits/core4_repeat/queries_200.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test_hits/core4/queries.fasta"
-    file2 = "../experiments/refactor_test_hits/core4_repeat/queries.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test_hits/core4/references.fasta"
-    file2 = "../experiments/refactor_test_hits/core4/references.fasta"
-    compare_files(file1, file2)
-
-
-    file1 = "../experiments/refactor_test/core4/references.fasta"
-    file2 = "../experiments/refactor_test_hits/core4/references.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test/core4/queries.fasta"
-    file2 = "../experiments/refactor_test_hits/core4/queries.fasta"
-    #compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test/core4/queries_200.fasta"
-    file2 = "../experiments/refactor_test_hits/core4/queries_200.fasta"
-    #compare_files(file1, file2)
-    """
-    """
-    file1 = "../experiments/refactor_test/core4/references.fasta"
-    file2 = "../experiments/refactor_test/core4_new_iqtree/references.fasta"
-    compare_files(file1, file2)
-
-    file1 = "../experiments/refactor_test/core4/queries.fasta"
-    file2 = "../experiments/refactor_test/core4_new_iqtree/queries.fasta"
-    compare_files(file1, file2)"""
-
-    file1 = "../experiments/refactor_test/core4_data_hits/results_references_queries_200/results.out"
-    file2 = "../experiments/refactor_test_hits/core4/results_references_queries_200/results.out"
+    file1 = "../experiments/small_test/test1/results_references_queries_200/results.out"
+    file2 = "../experiments/small_test/test2/results_references_queries_200/results.out"
     compare_files(file1, file2)

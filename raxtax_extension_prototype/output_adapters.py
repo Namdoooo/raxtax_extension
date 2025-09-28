@@ -117,9 +117,6 @@ def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_e
             f.write(query_name + "\n")
             t = query_set_size // 2
 
-            print(query_name, query_set_size)
-            print(intersection_sizes)
-
             start_calculation_prob_time = time.perf_counter()
             prob = prob_fast.calculate_confidence_scores(intersection_sizes, t, query_set_size)
             end_calculation_prob_time = time.perf_counter()

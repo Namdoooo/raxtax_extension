@@ -14,15 +14,6 @@ def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
 
     # Write config only if redo_config is True or file does not exist
     if redo_config or not config_path.exists():
-        print("base_dir: " + str(base_dir))
-        print("redo config: " + str(redo_config))
-        print("leaf_count: " + str(leaf_count))
-        print("sequence_length: " + str(sequence_length))
-        print("tree_height: " + str(tree_height))
-        print("query_count: " + str(query_count))
-        print("core_count: " + str(core_count))
-        print("not config_path.exists()")
-        print(not config_path.exists())
 
         iqtree_seed = utils.create_random_seed()
         pygargammel_seed = utils.create_random_seed()
@@ -42,9 +33,21 @@ def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
         with config_path.open("w") as f:
             yaml.dump(config_data, f, sort_keys=False)
 
-        print(f"Created configuration file: {config_path}")
+        if not config_path.exists():
+            print(f"[INFO] Created new configuration file at {config_path}")
+        elif redo_config:
+            print(f"[INFO] Re-created configuration file at {config_path}")
+
+        print("    Parameters:")
+        print("        base_dir: " + str(base_dir))
+        print("        redo config: " + str(redo_config))
+        print("        leaf_count: " + str(leaf_count))
+        print("        sequence_length: " + str(sequence_length))
+        print("        tree_height: " + str(tree_height))
+        print("        query_count: " + str(query_count))
+        print("        core_count: " + str(core_count))
     else:
-        print(f"Configuration file already exists: {config_path}")
+        print(f"[INFO] Configuration file already exists at {config_path}, skipping creation")
 
     return config_path
 
@@ -55,20 +58,21 @@ def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_l
 
     return create_config_at_path(base_dir, redo_config, leaf_count, sequence_length, tree_height, query_count, core_count)
 
-def run_simulation():
+def run_simulation(config_dir: Path | None = None):
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
-    config_path = base_dir / "config.yaml"
+    if config_dir is None:
+        config_dir = base_dir
+    config_path = config_dir / "config.yaml"
 
-    data_generator.simulate_references_queries_with_config(config_path)
+    data_generator.simulate_references_queries_with_config(config_path, base_dir)
 
-    # Load config.yaml
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
 
     start_time = time.perf_counter()
 
-    reference_path = base_dir / "references.fasta"
-    query_path = base_dir / f"queries_{config['query_count']}.fasta"
+    reference_path = base_dir / "references" / "references.fasta"
+    query_path = base_dir / "queries" / f"queries_{config['query_count']}.fasta"
 
     core_count = config.get("core_count", 0)
 
