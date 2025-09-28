@@ -8,7 +8,7 @@ import raxtax_extension_prototype.fasta_editor as fasta_editor
 import raxtax_extension_prototype.utils as utils
 
 def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, treeheight: float, seed_iqtree: int=None):
-    print("[INFO] Create reference data.")
+    print(f"[INFO] Create reference data at {reference_path}.")
 
     if not reference_path.parent.exists():
         print(f"[ERROR] Path not found: {reference_path.parent}")
@@ -27,6 +27,11 @@ def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, tre
     # Optional: Seed hinzufügen, wenn übergeben
     if seed_iqtree is not None:
         command += ["--seed", str(seed_iqtree)]
+
+    print(f"        leafcount: {leafcount}")
+    print(f"        length: {length}")
+    print(f"        treeheight: {treeheight}")
+    print(f"        seed_iqtree: {seed_iqtree}")
 
     print("[INFO] Execute :", " ".join(command))
     result = subprocess.run(command, capture_output=True, text=True)
@@ -49,6 +54,15 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
 
     pygargammel_log_path = queries_dir / "pygargammel.log"
 
+    print(f"[INFO] Create query data at {queries_path}.")
+    print(f"        min_length: {min_length}")
+    print(f"        fragment_count: {fragment_count}")
+    print(f"        nick_freq: {nick_freq}")
+    print(f"        overhang_parameter: {overhang_parameter}")
+    print(f"        double_strand_deamination: {double_strand_deamination}")
+    print(f"        single_strand_deamination: {single_strand_deamination}")
+    print(f"        seed_pygargammel: {seed_pygargammel}")
+
     command = [
         "python", str(pygargammel_path),
         "--fasta", str(references_path),
@@ -67,7 +81,7 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
     if seed_pygargammel is not None:
         command += ["--seed", str(seed_pygargammel)]
 
-    print("Führe aus:", " ".join(command))
+    print("[INFO] execute :", " ".join(command))
     result = subprocess.run(command, capture_output=True, text=True)
 
     # Ausgabe anzeigen
@@ -79,8 +93,6 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
 
 def simulate_references_queries(base_dir: Path, leafcount: int, length: int, treeheight: float, query_count: int, iqtree_seed: int=None, pygargammel_seed: int=None, query_selection_seed: int=None,
                                 min_length: int=100, fragment_count: int=50, nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
-    print(f"[INFO] Create references and queries at {base_dir}, with leafcount={leafcount}, length={length}, treeheight={treeheight}")
-
 
     reference_dir = base_dir / "references"
     utils.create_folder(reference_dir)

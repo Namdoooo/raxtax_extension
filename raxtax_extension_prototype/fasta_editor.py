@@ -27,7 +27,7 @@ def phy_to_fasta(phy_path, fasta_path):
     with open(fasta_path, 'w') as fasta_file:
         fasta_file.write('\n'.join(fasta_lines))
 
-    print(f"Conversion complete. Saved as: {fasta_path}")
+    print(f"[INFO] Conversion complete. Saved as: {fasta_path}")
 
 def reduce_fasta(input_path, output_path):
     anteil = 0.875
@@ -42,7 +42,7 @@ def reduce_fasta(input_path, output_path):
     # Write to new file
     SeqIO.write(first_part, output_path, "fasta")
 
-    print(f"Wrote {len(first_part)} sequences to {output_path}")
+    print(f"[INFO] Wrote {len(first_part)} sequences to {output_path}")
 
 def complement_fasta(input_path, output_path):
     complement = str.maketrans("ACGTacgt", "TGCAtgca")
@@ -56,7 +56,7 @@ def complement_fasta(input_path, output_path):
                 # Sequenzzeile komplementieren und schreiben
                 comp_line = line.strip().translate(complement)
                 outfile.write(comp_line + os.linesep)
-    print(f"Complemented sequences written to {output_path}")
+    print(f"[INFO] Complemented sequences written to {output_path}")
 
 def complement_alternate_fasta(input_path, output_path):
     complement = str.maketrans("ACGTacgt", "TGCAtgca")
@@ -74,7 +74,7 @@ def complement_alternate_fasta(input_path, output_path):
                     # Jeden zweiten Eintrag (1, 3, 5, ...) komplementieren
                     sequence = sequence.translate(complement)
                 outfile.write(sequence + os.linesep)
-    print(f"Complemented alternate sequences written to {output_path}")
+    print(f"[INFO] Complemented alternate sequences written to {output_path}")
 
 def complement_fasta_with_probability(input_path, output_path, p: float = 0.5):
     """
@@ -93,7 +93,7 @@ def complement_fasta_with_probability(input_path, output_path, p: float = 0.5):
                     sequence = sequence.translate(complement)
                 outfile.write(sequence + os.linesep)
 
-    print(f"Sequences written to {output_path} with {p*100:.0f}% complement probability.")
+    print(f"[INFO] Sequences written to {output_path} with {p*100:.0f}% complement probability.")
 
 def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = None):
 
