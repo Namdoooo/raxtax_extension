@@ -2,6 +2,10 @@ experiments/**
 !experiments/**/*.py
 !experimtens/**/*.yaml
 
+benchmarks_hits/**
+!benchmarks_hits/**/*.py
+!benchmarks_hits/**/*.yaml
+
 validator/example/
 
 raxtax/
