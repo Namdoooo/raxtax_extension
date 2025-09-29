@@ -57,5 +57,18 @@ def run_all_main():
             print(f"Running {module_path}...")
             subprocess.run(["python", "-m", module_path], check=True)
 
+def run_main_list(main_dir_list: list[Path]):
+    for main_dir in main_dir_list:
+        main_path = main_dir / "main.py"
+        print(main_path)
+        print(main_path.is_file())
+        if main_path.is_file():
+            rel_parts = main_path.with_suffix("").parts
+            if "raxtax" in rel_parts:
+                rel_parts = rel_parts[rel_parts.index("raxtax") + 1 :]
+            module_path = ".".join(rel_parts)
+            print(f"Running {module_path}...")
+            subprocess.run(["python", "-m", module_path], check=True)
+
 if __name__ == "__main__":
     pass
