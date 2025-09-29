@@ -147,7 +147,7 @@ def create_folder(path: Union[Path, str]) -> None:
 if __name__ == "__main__":
     file1 = "../experiments/small_test/test1/results_references_queries_200/results.out"
     file2 = "../experiments/small_test/test2/results_references_queries_200/results.out"
-    compare_files(file1, file2)
+    #compare_files(file1, file2)
 
     file1 = "../experiments/small_test/test1/queries.fasta"
     file2 = "../experiments/small_test/test2//queries/queries.fasta"

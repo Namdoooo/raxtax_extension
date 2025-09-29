@@ -67,4 +67,4 @@ def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_l
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
 
     return create_config_at_path(base_dir, redo_config, leaf_count, sequence_length, tree_height, query_count, core_count,
-                                 query_min_lenght, fragment_count, nick_freq, overhang_parameter, double_strand_deamination)
+                                 query_min_lenght, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)

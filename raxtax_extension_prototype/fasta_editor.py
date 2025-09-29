@@ -118,7 +118,7 @@ def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = N
 
     SeqIO.write(new_records, output_path, "fasta")
 
-    print(f"Wrote {len(new_records)} sequences to {output_path}")
+    print(f"[INFO] Wrote {len(new_records)} sequences to {output_path}")
 
     # Write log file
     log_path = os.path.splitext(output_path)[0] + ".log"
