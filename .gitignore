@@ -1,3 +1,4 @@
+# experiment/benchmark data
 experiments/**
 !experiments/**/*.py
 !experimtens/**/*.yaml
@@ -8,14 +9,27 @@ benchmarks_hits/**
 
 validator/example/
 
-raxtax/
-
+# Environments
 .conda_venv
+
+# MacOS
 .DS_Store
 
-.log
+# Pycharm
+.idea/
 
-# Ignore all HDF5 files
-*.h5
+# pytest
+.pytest_cache/
 
+# Python
 __pycache__/
+*.pyc
+
+.log
+.h5
+.fasta
+.phy
+.treefile
+
+#old rust libraries
+raxtax/
