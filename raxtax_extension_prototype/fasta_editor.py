@@ -1,5 +1,7 @@
 import numpy as np
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 import random
 import os
 
@@ -76,24 +78,46 @@ def complement_alternate_fasta(input_path, output_path):
                 outfile.write(sequence + os.linesep)
     print(f"[INFO] Complemented alternate sequences written to {output_path}")
 
-def complement_fasta_with_probability(input_path, output_path, p: float = 0.5):
-    """
-    Reads a FASTA file and complements each sequence line
-    with probability p (default 50%).
-    """
+def complement_fasta_with_probability(input_path, output_path, p: float = 0.5, seed: int | None = None):
     complement = str.maketrans("ACGTacgt", "TGCAtgca")
 
-    with open(input_path, "r") as infile, open(output_path, "w") as outfile:
-        for line in infile:
-            if line.startswith(">"):
-                outfile.write(line)  # headers unchanged
-            else:
-                sequence = line.strip()
-                if random.random() < p:
-                    sequence = sequence.translate(complement)
-                outfile.write(sequence + os.linesep)
+    # Seed setzen
+    if seed is None:
+        seed = utils.create_random_seed()
+        print(f"[INFO] Using randomly generated seed: {seed}")
+    else:
+        print(f"[INFO] Using provided seed: {seed}")
+    random.seed(seed)
+
+    records_out = []
+
+    for record in SeqIO.parse(input_path, "fasta"):
+        seq_str = str(record.seq)
+        if random.random() < p:
+            seq_str = seq_str.translate(complement)
+        new_record = SeqRecord(Seq(seq_str), id=record.id, description=record.description)
+        records_out.append(new_record)
+
+    SeqIO.write(records_out, output_path, "fasta")
 
     print(f"[INFO] Sequences written to {output_path} with {p*100:.0f}% complement probability.")
+
+    # Write log file
+    log_path = output_path.with_suffix(output_path.suffix + ".log")
+    with open(log_path, "w") as log_file:
+        log_file.write("COMPLEMENT FASTA WITH PROBABILITY P LOG\n")
+        log_file.write("==================\n")
+        log_file.write(f"Input file     : {input_path}\n")
+        log_file.write(f"Output file    : {output_path}\n")
+        log_file.write(f"p  : {p}\n")
+        log_file.write(f"Seed used      : {seed}\n")
+        log_file.write(f"Sequences      : {len(records_out)}\n")
+
+    print(f"[INFO] Log written to {log_path}")
+    return seed
+
+def disorient_fasta(input_path, output_path, seed: int | None = None):
+    return complement_fasta_with_probability(input_path, output_path, p=0.5, seed=seed)
 
 def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = None):
 

@@ -1,4 +1,6 @@
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 import h5py
 import time
 import numpy as np
@@ -33,6 +35,8 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
 
     with h5py.File(result_path, "w", track_order=True) as f:
 
+        kmer_occurrence_count = np.zeros(constants.KMER_COUNT, dtype=np.uint32)
+
         for idx, (lineage, sequence) in enumerate(lin_seq_pair):
             #print(idx)
             #print(lineage)
@@ -43,6 +47,7 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
             for i in range(len(sequence) - constants.K + 1):
                 kmer = utils.kmer_to_index(sequence[i:i + constants.K])
                 kmer_map[kmer].append(i)
+                kmer_occurrence_count[kmer] += 1
 
             flat_data = np.concatenate(kmer_map)
             bucket_sizes = np.array([len(b) for b in kmer_map], dtype=np.uint32)
@@ -52,6 +57,8 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
             grp.attrs["name"] = lineage
             grp.create_dataset("flat_data", data=flat_data, dtype=np.uint32, compression="gzip")
             grp.create_dataset("offsets", data=offsets, dtype=np.uint32, compression="gzip")
+
+        f.create_dataset("kmer_occurrence_count", data=kmer_occurrence_count, dtype=np.uint32, compression="gzip")
 
 def parse_query_fasta(query_path: Path):
     query_names = []
@@ -159,6 +166,37 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, redo: bool = 
     }
 
     return result, reference_names, runtime_info
+
+def orient_queries(query_path: Path, reference_data_path: Path, redo: bool = False):
+    print(f"[INFO] Orient queries from: {query_path}")
+    oriented_path = query_path.with_name(query_path.stem + "_oriented" + query_path.suffix)
+
+    if not redo and oriented_path.exists():
+        print(f"[INFO] Queries already oriented, skipping orienting queries.")
+        return
+
+    with h5py.File(reference_data_path, "r") as f:
+        kmer_occurrence_count = f["kmer_occurrence_count"][:]
+
+    records_out = []
+
+    for record in SeqIO.parse(query_path, "fasta"):
+        kmer_net_count = 0
+        seq_str = str(record.seq)
+
+        for kmer_int in utils.sequence_to_kmer_set(seq_str, constants.K):
+            kmer_complement_int = utils.complement_kmer_index(kmer_int)
+            kmer_net_count += int(kmer_occurrence_count[kmer_int])
+            kmer_net_count -= int(kmer_occurrence_count[kmer_complement_int])
+
+        if kmer_net_count >= 0:
+            records_out.append(record)
+        else:
+            new_record = SeqRecord(Seq(utils.complement_sequence_str(seq_str)), id=record.id, description=record.description)
+            records_out.append(new_record)
+
+    SeqIO.write(records_out, oriented_path, "fasta")
+    print(f"[INFO] Oriented queries written to: {oriented_path}")
 
 def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths):
     with h5py.File(result_path, "r") as f:

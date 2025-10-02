@@ -2,6 +2,7 @@ import numpy as np
 import re
 from pathlib import Path
 from typing import Union
+import raxtax_extension_prototype.constants as constants
 
 def kmer_to_index(kmer: str) -> int:
     base_to_bits = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
@@ -22,6 +23,15 @@ def sequence_to_kmer_set(seq: str, k: int = 8) -> list[int]:
             kmer_set.add(index)
 
     return sorted(kmer_set)
+
+def complement_sequence_str(sequence: str) -> str:
+    complement_table = str.maketrans("ACGTacgt", "TGCAtgca")
+    return sequence.translate(complement_table)
+
+def complement_kmer_index(kmer: int, k: int = constants.K):
+    mask = (1 << (2 * k)) - 1
+    return kmer ^ mask
+
 
 def create_random_seed() -> int:
     seed = np.random.randint(0, 2 ** 32 - 1)
@@ -145,10 +155,8 @@ def create_folder(path: Union[Path, str]) -> None:
     #print(f"[INFO] directory created or existed: {folder_path.resolve()}")
 
 if __name__ == "__main__":
-    file1 = "../experiments/small_test/test1/results_references_queries_200/results.out"
-    file2 = "../experiments/small_test/test2/results_references_queries_200/results.out"
-    #compare_files(file1, file2)
-
-    file1 = "../experiments/small_test/test1/queries.fasta"
-    file2 = "../experiments/small_test/test2//queries/queries.fasta"
+    file1 = "../experiments/small_test/test/queries/queries_200.fasta"
+    file2 = "../experiments/small_test/test/queries/queries_200_disoriented_oriented.fasta"
     compare_files(file1, file2)
+
+
