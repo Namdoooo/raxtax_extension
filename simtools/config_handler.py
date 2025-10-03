@@ -4,9 +4,10 @@ import inspect
 
 import raxtax_extension_prototype.utils as utils
 
-def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=0,
+def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=8,
                           query_min_length: int=100, fragment_count: int=50, nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0,
-                          iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None):
+                          iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None,
+                          mutation_rate: float | None = None, mutation_seed: int | None = None, disorientation_probability: float | None = None, disorientation_seed: int | None = None):
     config_path = base_dir / "config.yaml"
 
     # Write config only if redo_config is True or file does not exist
@@ -18,6 +19,20 @@ def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
             pygargammel_seed = utils.create_random_seed()
         if query_selection_seed is None:
             query_selection_seed = utils.create_random_seed()
+
+        if mutation_rate is None:
+            mutation_rate = -1
+            mutation_seed = -1
+        else:
+            if mutation_seed is None:
+                mutation_seed = utils.create_random_seed()
+
+        if disorientation_probability is None:
+            disorientation_probability = -1
+            disorientation_seed = -1
+        else:
+            if disorientation_seed is None:
+                disorientation_seed = utils.create_random_seed()
 
         config_data = {
             "leaf_count": leaf_count,
@@ -34,6 +49,10 @@ def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
             "iqtree_seed": iqtree_seed,
             "pygargammel_seed": pygargammel_seed,
             "query_selection_seed": query_selection_seed,
+            "mutation_rate": mutation_rate,
+            "mutation_seed": mutation_seed,
+            "disorientation_probability": disorientation_probability,
+            "disorientation_seed": disorientation_seed,
         }
 
         with config_path.open("w") as f:
@@ -64,13 +83,15 @@ def create_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
 
     return config_path
 
-def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=0,
+def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_length: int=50000, tree_height: float=0.1, query_count: int=200, core_count: int=8,
                        query_min_lenght: int=100, fragment_count: int=50, nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0,
-                       iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None):
+                       iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None,
+                       mutation_rate: float | None = None, mutation_seed: int | None = None, disorientation_probability: float | None = None, disorientation_seed: int | None = None):
 
     # Get the path of the file that called this function
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
 
     return create_config_at_path(base_dir, redo_config, leaf_count, sequence_length, tree_height, query_count, core_count,
                                  query_min_lenght, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination,
-                                 iqtree_seed, pygargammel_seed, query_selection_seed)
+                                 iqtree_seed, pygargammel_seed, query_selection_seed,
+                                 mutation_rate, mutation_seed, disorientation_probability, disorientation_seed)

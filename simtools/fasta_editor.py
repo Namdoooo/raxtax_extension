@@ -116,7 +116,7 @@ def complement_fasta_with_probability(input_path, output_path, p: float = 0.5, s
     print(f"[INFO] Log written to {log_path}")
     return seed
 
-def disorient_fasta(input_path, output_path, seed: int | None = None):
+def disorient_fasta(input_path, output_path, p: float = 0.5, seed: int | None = None):
     return complement_fasta_with_probability(input_path, output_path, p=0.5, seed=seed)
 
 def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = None):

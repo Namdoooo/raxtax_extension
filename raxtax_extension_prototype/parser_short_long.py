@@ -99,7 +99,7 @@ def calculate_intersection_size(flat_data: np.ndarray, offsets: np.ndarray, kmer
 
     return max_intersection_size
 
-def get_intersection_sizes(reference_path: Path, query_path: Path, redo: bool = False):
+def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query: bool = False, redo: bool = False):
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
 
     reference_start_time = time.perf_counter()
@@ -113,9 +113,18 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, redo: bool = 
         print("Lookup table created.")
         print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
 
+    query_oriented_path = query_path
+    orient_queries_time = 0
+    if orient_query:
+        orient_queries_start_time = time.perf_counter()
+        query_oriented_path = query_path.with_name(query_path.stem + "_oriented" + query_path.suffix)
+        orient_queries(query_path, result_path, redo=True)
+        orient_queries_end_time = time.perf_counter()
+        orient_queries_time = orient_queries_end_time - orient_queries_start_time
+
 
     query_start_time = time.perf_counter()
-    query_data = parse_query_fasta(query_path)
+    query_data = parse_query_fasta(query_oriented_path)
     query_end_time = time.perf_counter()
     query_parse_time = query_end_time - query_start_time
     print(f"Parsing query sequences took {query_parse_time} seconds.")
@@ -161,6 +170,7 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, redo: bool = 
     runtime_info = {
         "reference_parse_time": reference_parse_time,
         "query_parse_time": query_parse_time,
+        "orient_queries_time": orient_queries_time,
         "calculate_intersection_sizes_time": calculate_intersection_sizes_time,
         "average_reference_processing_time": average_reference_processing_time,
     }
@@ -217,7 +227,7 @@ def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths)
 
     return idx, lineage_name, intersection_sizes
 
-def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, redo: bool = False, num_workers: int = None):
+def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, orient_query: bool = False, redo: bool = False, num_workers: int = None):
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
 
     reference_start_time = time.perf_counter()
@@ -231,9 +241,17 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, redo
         print("Lookup table created.")
         print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
 
+    query_oriented_path = query_path
+    orient_queries_time = 0
+    if orient_query:
+        orient_queries_start_time = time.perf_counter()
+        query_oriented_path = query_path.with_name(query_path.stem + "_oriented" + query_path.suffix)
+        orient_queries(query_path, result_path, redo=True)
+        orient_queries_end_time = time.perf_counter()
+        orient_queries_time = orient_queries_end_time - orient_queries_start_time
 
     query_start_time = time.perf_counter()
-    query_data = parse_query_fasta(query_path)
+    query_data = parse_query_fasta(query_oriented_path)
     query_end_time = time.perf_counter()
     query_parse_time = query_end_time - query_start_time
     print(f"Parsing query sequences took {query_parse_time} seconds.")
@@ -254,9 +272,10 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, redo
         with h5py.File(result_path, "r") as f:
             reference_count = len(f.keys())
             for idx in f.keys():
-                futures.append(executor.submit(
-                    process_reference, idx, result_path, query_kmer_sets, query_sequence_lengths
-                ))
+                if idx != "kmer_occurrence_count":
+                    futures.append(executor.submit(
+                        process_reference, idx, result_path, query_kmer_sets, query_sequence_lengths
+                    ))
 
         for future in futures:
             idx, lineage_name, sizes = future.result()
@@ -277,6 +296,7 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, redo
     runtime_info = {
         "reference_parse_time": reference_parse_time,
         "query_parse_time": query_parse_time,
+        "orient_queries_time": orient_queries_time,
         "calculate_intersection_sizes_time": calculate_intersection_sizes_time,
         "average_reference_processing_time": average_reference_processing_time,
     }

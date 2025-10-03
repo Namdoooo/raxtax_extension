@@ -4,7 +4,7 @@ import random
 
 from pathlib import Path
 
-import raxtax_extension_prototype.fasta_editor as fasta_editor
+import simtools.fasta_editor as fasta_editor
 import raxtax_extension_prototype.utils as utils
 
 def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, treeheight: float, seed_iqtree: int=None):

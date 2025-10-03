@@ -4,9 +4,11 @@ import yaml
 import subprocess
 import inspect
 
-import raxtax_extension_prototype.data_generator as data_generator
+import simtools.data_generator as data_generator
+import simtools.fasta_editor as fasta_editor
 import raxtax_extension_prototype.parser_short_long as parser
 import raxtax_extension_prototype.output_adapters as output_adapters
+
 
 def run_simulation(config_dir: Path | None = None):
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
@@ -26,10 +28,27 @@ def run_simulation(config_dir: Path | None = None):
 
     core_count = config.get("core_count", 0)
 
+    mutation_rate = config.get("mutation_rate", -1)
+    mutation_seed = config.get("mutation_seed", -1)
+    disorientation_probability = config.get("disorientation_probability", -1)
+    disorientation_seed = config.get("disorientation_seed", -1)
+
+    if mutation_seed != -1:
+        query_mutated_path = query_path.with_name(query_path.stem + "_mutated" + query_path.suffix)
+        fasta_editor.mutate_fasta(query_path, query_mutated_path, mutation_rate, seed=mutation_seed)
+        query_path = query_mutated_path
+
+    orient_query_bool = False
+    if disorientation_seed != -1:
+        query_disoriented_path = query_path.with_name(query_path.stem + "_disoriented" + query_path.suffix)
+        fasta_editor.disorient_fasta(query_path, query_disoriented_path, p=disorientation_probability, seed=disorientation_seed)
+        query_path = query_disoriented_path
+        orient_query_bool = True
+
     if core_count == 0:
-        results, names, runtime_info = parser.get_intersection_sizes(reference_path, query_path, True)
+        results, names, runtime_info = parser.get_intersection_sizes(reference_path, query_path, orient_query=orient_query_bool,redo=True)
     else:
-        results, names, runtime_info = parser.get_intersection_sizes_parallel(reference_path, query_path, True, config["core_count"])
+        results, names, runtime_info = parser.get_intersection_sizes_parallel(reference_path, query_path, redo=True, orient_query=orient_query_bool, num_workers=core_count)
 
     ref_name = reference_path.stem
     query_name = query_path.stem

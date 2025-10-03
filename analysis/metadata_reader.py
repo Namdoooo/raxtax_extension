@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-import raxtax_extension_prototype.viz_utils as viz_utils
+import analysis.viz_utils as viz_utils
 import raxtax_extension_prototype.utils as utils
 
 

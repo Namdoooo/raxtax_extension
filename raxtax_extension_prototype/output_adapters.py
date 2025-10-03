@@ -153,6 +153,7 @@ def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_e
         "total_execution_time": total_execution_time,
         "reference_parse_time": runtime_info["reference_parse_time"],
         "query_parse_time": runtime_info["query_parse_time"],
+        "orient_queries_time": runtime_info["orient_queries_time"],
         "calculate_intersection_sizes_time": runtime_info["calculate_intersection_sizes_time"],
         "average_reference_processing_time": runtime_info["average_reference_processing_time"],
         "average_prob_calculation_time": average_prob_calculation_time,
