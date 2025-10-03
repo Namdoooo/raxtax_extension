@@ -2,7 +2,7 @@ from pathlib import Path
 
 def create_main_at_path(base_dir: Path, redo_main: bool = False):
     script = """\
-from raxtax_extension_prototype.simulator import run_simulation
+from simtools.simulator import run_simulation
 
 if __name__ == "__main__":
     run_simulation()
