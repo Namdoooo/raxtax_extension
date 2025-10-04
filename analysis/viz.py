@@ -8,16 +8,18 @@ def plot_benchmark(
     df,
     x_col: str,
     y_col: str,
-    hue_col: str,
+    hue_col: str | None = None,
     xlabel: str = "X-axis",
     ylabel: str = "Y-axis",
     title: str = None,
     error: str = "sd",   # "sd", "ci", or None
+    error_color: str = "#5573AA",
     ref_slope: float | None = None,
     ref_intercept: float = 0,
     ref_label: str = "ideal",
     ref_color: str = "#58BBCC",
     rotation: int | float = 0,
+    xgrid_exact: bool = False,
     palette: str | list | dict | None = ["#ED6D52", "#58BBCC"],
     save_path: str | Path = None
 ):
@@ -55,16 +57,36 @@ def plot_benchmark(
     sns.set_style("whitegrid")
     plt.figure(figsize=(8, 5))
 
-    sns.lineplot(
-        data=df,
-        x=x_col,
-        y=y_col,
-        hue=hue_col,
-        marker="o",
-        linewidth=2,
-        errorbar=error,
-        palette=palette
-    )
+    if hue_col is None:
+        line_color = "#ED6D52"
+        ax = sns.lineplot(
+            data=df,
+            x=x_col,
+            y=y_col,
+            color=line_color,
+            marker="o",
+            linewidth=2,
+            errorbar=error,
+            err_kws={"edgecolor": None, "alpha": 0.2, "facecolor": error_color},
+        )
+    else:
+        ax = sns.lineplot(
+            data=df,
+            x=x_col,
+            y=y_col,
+            hue=hue_col,
+            marker="o",
+            linewidth=2,
+            errorbar=error,
+            err_kws={"edgecolor": None, "alpha": 0.2, "facecolor": error_color},
+            palette=palette
+        )
+
+    if xgrid_exact:
+        ax.set_xticks(sorted(df[x_col].unique()))  # tick/grid at each data x
+        ax.grid(True, axis="x")
+
+    #ax.set_xscale("log", base=2)
 
     # Add reference line if requested
     if ref_slope is not None:
@@ -72,16 +94,6 @@ def plot_benchmark(
         x_vals = np.linspace(df[x_col].min(), df[x_col].max(), 200)
         y_vals = ref_slope * x_vals + ref_intercept  # slope=1, intercept=0
         plt.plot(x_vals, y_vals, "--", color=ref_color, label=ref_label, linewidth=2)
-
-        """
-        plt.axline(
-            (0.2, ref_intercept),
-            slope=ref_slope,
-            linestyle="--",
-            linewidth=2,
-            color=ref_color,
-            label=ref_label
-        )"""
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -125,7 +137,7 @@ if __name__ == "__main__":
         for t in threads:
             # simulate 5 runs per (method, thread)
             for run in range(5):
-                base_time = (1000 / t) * (1.0 if method == "raxtax" else 1.2)
+                base_time = (1000 / t) * (1.0 if method == "raxtax" else 0)
                 noise = rng.normal(0, base_time * 0.25)  # 5% noise
                 rows.append({"Threads": t, "Runtime": base_time + noise, "Method": method})
 
@@ -140,4 +152,5 @@ if __name__ == "__main__":
         y_col="Runtime",
         hue_col="Method",
         error="sd",
+        xgrid_exact=True,
     )
