@@ -223,7 +223,7 @@ def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths)
 
         reference_processing_time_end = time.perf_counter()
         reference_processing_time = reference_processing_time_end - reference_processing_time_start
-        print(f"Processing {idx} reference took {reference_processing_time} seconds.")
+        #print(f"Processing {idx} reference took {reference_processing_time} seconds.")
 
     return idx, lineage_name, intersection_sizes
 
