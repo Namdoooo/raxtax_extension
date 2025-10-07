@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     for i in sequence_length_list:
         sequence_length = i
-        config_dir = base_dir / f"leaf_count{leaf_count}"
+        config_dir = base_dir / f"sequence_length{sequence_length}"
         config_dir.mkdir(parents=True, exist_ok=True)
 
         create_config_at_path(base_dir=config_dir,
