@@ -20,9 +20,9 @@ if __name__=="__main__":
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)
     df_all = pd.read_csv(combined_metadata_path)
+    df_all[hue_col_name] = hue_name
 
-    df_selected = df_all[[independent_var_name, dependent_var_name]]
-    df_selected[hue_col_name] = hue_name
+    df_selected = df_all[[independent_var_name, dependent_var_name, hue_col_name]]
 
     plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                    xgrid_exact=True, error="sd", save_path=plot_path)
@@ -51,10 +51,7 @@ if __name__=="__main__":
 
         plot_path = plot_dir / plot_name
 
-        df_selected = df_all[[independent_var_name, dependent_var_name]]
-
-        hue_col_name = "name"
-        df_selected[hue_col_name] = "raxtax+"
+        df_selected = df_all[[independent_var_name, dependent_var_name, hue_col_name]]
 
         plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                        xgrid_exact=True, error="sd", save_path=plot_path)
