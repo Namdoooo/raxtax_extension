@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     for i in query_count_list:
         query_count = i
-        config_dir = base_dir / f"sequence_length{sequence_length}"
+        config_dir = base_dir / f"query_count{query_count}"
         config_dir.mkdir(parents=True, exist_ok=True)
 
         create_config_at_path(base_dir=config_dir,
