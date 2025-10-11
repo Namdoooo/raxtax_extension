@@ -8,14 +8,14 @@ from raxtax_extension_prototype.utils import create_folder
 if __name__=="__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
 
-    independent_var_name = "sequence_length"
-    xlabel = "Reference Length"
-    dependent_var_name = "calculate_intersection_sizes_time"
-    ylabel = "Time (s)"
+    independent_var_name = "mutation_rate"
+    xlabel = "Mutation Rate"
+    dependent_var_name = "f1_score"
+    ylabel = "F1 Score"
     hue_col_name = "name"
     hue_name = "raxtax+"
 
-    plot_name = "sequence_length_vs_calculate_intersection_sizes_time.pdf"
+    plot_name = "mutation_rate_vs_f1_score.pdf"
     plot_path = base_dir / plot_name
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)

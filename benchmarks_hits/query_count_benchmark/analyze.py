@@ -15,7 +15,7 @@ if __name__=="__main__":
     hue_col_name = "name"
     hue_name = "raxtax+"
 
-    plot_name = "sequence_length_vs_calculate_intersection_sizes_time.png"
+    plot_name = "sequence_length_vs_calculate_intersection_sizes_time.pdf"
     plot_path = base_dir / plot_name
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)
@@ -28,7 +28,7 @@ if __name__=="__main__":
                    xgrid_exact=True, error="sd", save_path=plot_path)
 
 
-    dependent_var_names = ["reference_count", "query_count", "total_execution_time", "reference_parse_time",
+    dependent_var_names = ["reference_count", "total_execution_time", "reference_parse_time",
                            "query_parse_time", "orient_queries_time", "calculate_intersection_sizes_time",
                            "average_reference_processing_time", "average_prob_calculation_time", "tp", "mc", "fp", "fn",
                            "recall", "precision", "f1_score"]
@@ -37,7 +37,7 @@ if __name__=="__main__":
 
     plot_names = []
     for dependent_var_name in dependent_var_names:
-        plot_name = f"{independent_var_name}_vs_{dependent_var_name}.png"
+        plot_name = f"{independent_var_name}_vs_{dependent_var_name}.pdf"
         plot_names.append(plot_name)
 
 
