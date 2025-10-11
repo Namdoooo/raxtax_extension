@@ -8,6 +8,7 @@ benchmarks_hits/**
 !benchmarks_hits/**/*.yaml
 
 benchmarks_missing/**
+benchmarks_old/**
 
 validator/example/
 
