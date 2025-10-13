@@ -15,7 +15,7 @@ if __name__=="__main__":
     hue_col_name = "name"
     hue_name = "raxtax+"
 
-    plot_name = "sequence_length_vs_calculate_intersection_sizes_time.pdf"
+    plot_name = f"{independent_var_name}_vs_{dependent_var_name}.pdf"
     plot_path = base_dir / plot_name
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)

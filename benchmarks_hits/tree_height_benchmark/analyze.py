@@ -9,7 +9,7 @@ if __name__=="__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
 
     independent_var_name = "tree_height"
-    xlabel = "Tree Height"
+    xlabel = "Average Branch Length"
     dependent_var_name = "f1_score"
     ylabel = "F1 Score"
     hue_col_name = "name"
@@ -20,6 +20,7 @@ if __name__=="__main__":
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)
     df_all = pd.read_csv(combined_metadata_path)
+    df_all[independent_var_name] = df_all[independent_var_name] * 0.1
 
     df_selected = df_all[[independent_var_name, dependent_var_name]]
     df_selected[hue_col_name] = hue_name
