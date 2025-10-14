@@ -95,3 +95,59 @@ def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_l
                                  query_min_lenght, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination,
                                  iqtree_seed, pygargammel_seed, query_selection_seed,
                                  mutation_rate, mutation_seed, disorientation_probability, disorientation_seed)
+
+def modify_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: int | None = None, sequence_length: int | None = None, tree_height: float | None = None, query_count: int | None = None, core_count: int | None = None,
+                          query_min_length: int | None = None, fragment_count: int | None = None, nick_freq: float | None = None, overhang_parameter: float | None = None, double_strand_deamination: float | None = None, single_strand_deamination: float | None = None,
+                          iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None,
+                          mutation_rate: float | None = None, mutation_seed: int | None = None, disorientation_probability: float | None = None, disorientation_seed: int | None = None):
+    config_path = base_dir / "config.yaml"
+
+    if not redo_config:
+        print(f"[INFO] Not modifying configuration at {config_path}")
+        return config_path
+
+    with config_path.open("r") as f:
+        config = yaml.safe_load(f)
+
+    if leaf_count is not None:
+        config["leaf_count"] = leaf_count
+    if sequence_length is not None:
+        config["sequence_length"] = sequence_length
+    if tree_height is not None:
+        config["tree_height"] = tree_height
+    if query_count is not None:
+        config["query_count"] = query_count
+    if core_count is not None:
+        config["core_count"] = core_count
+    if query_min_length is not None:
+        config["query_min_length"] = query_min_length
+    if fragment_count is not None:
+        config["fragment_count"] = fragment_count
+    if nick_freq is not None:
+        config["nick_freq"] = nick_freq
+    if overhang_parameter is not None:
+        config["overhang_parameter"] = overhang_parameter
+    if double_strand_deamination is not None:
+        config["double_strand_deamination"] = double_strand_deamination
+    if single_strand_deamination is not None:
+        config["single_strand_deamination"] = single_strand_deamination
+    if iqtree_seed is not None:
+        config["iqtree_seed"] = iqtree_seed
+    if pygargammel_seed is not None:
+        config["pygargammel_seed"] = pygargammel_seed
+    if query_selection_seed is not None:
+        config["query_selection_seed"] = query_selection_seed
+    if mutation_rate is not None:
+        config["mutation_rate"] = mutation_rate
+    if mutation_seed is not None:
+        config["mutation_seed"] = mutation_seed
+    if disorientation_probability is not None:
+        config["disorientation_probability"] = disorientation_probability
+    if disorientation_seed is not None:
+        config["disorientation_seed"] = disorientation_seed
+
+    with config_path.open("w") as f:
+        yaml.dump(config, f, sort_keys=False)
+    print(f"[INFO] Modified configuration at {config_path}")
+    return config_path
+
