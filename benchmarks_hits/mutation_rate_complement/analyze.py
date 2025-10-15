@@ -8,19 +8,18 @@ from raxtax_extension_prototype.utils import create_folder
 if __name__=="__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
 
-    independent_var_name = "tree_height"
-    xlabel = "Average Branch Length"
+    independent_var_name = "mutation_rate"
+    xlabel = "Substitution Rate"
     dependent_var_name = "f1_score"
     ylabel = "F1 Score"
     hue_col_name = "name"
     hue_name = "raxtax+"
 
-    plot_name = "tree_height_vs_f1_score.pdf"
+    plot_name = f"{independent_var_name}_vs_{dependent_var_name}.pdf"
     plot_path = base_dir / plot_name
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)
     df_all = pd.read_csv(combined_metadata_path)
-    df_all[independent_var_name] = df_all[independent_var_name] * 0.1
     df_all[hue_col_name] = hue_name
 
     df_selected = df_all[[independent_var_name, dependent_var_name, hue_col_name]]
