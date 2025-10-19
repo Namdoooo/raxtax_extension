@@ -13,3 +13,17 @@ if __name__ == "__main__":
     if redo_main or not main_path.exists():
         main_path.write_text(script)
         print(f"[INFO] Created main.py at: {main_path}")
+
+def create_specific_main_at_path(base_dir: Path, func_name: str,redo_main: bool = False):
+    script = f"""\
+from simtools.simulator import {func_name}
+
+if __name__ == "__main__":
+    {func_name}()
+        """
+
+    main_path = base_dir / "main.py"
+
+    if redo_main or not main_path.exists():
+        main_path.write_text(script)
+        print(f"[INFO] Created main.py at: {main_path}")

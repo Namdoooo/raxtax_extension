@@ -2,6 +2,7 @@ import numpy as np
 import re
 from pathlib import Path
 from typing import Union
+import random
 import raxtax_extension_prototype.constants as constants
 
 def kmer_to_index(kmer: str) -> int:
@@ -154,9 +155,11 @@ def create_folder(path: Union[Path, str]) -> None:
 
     #print(f"[INFO] directory created or existed: {folder_path.resolve()}")
 
-if __name__ == "__main__":
-    file1 = "../experiments/small_test/test/queries/queries_200.fasta"
-    file2 = "../experiments/small_test/test/queries/queries_200_disoriented_oriented.fasta"
-    compare_files(file1, file2)
+def generate_unique_numbers(n, count, seed=None):
+    if seed is not None:
+        random.seed(seed)
+    if count > n:
+        raise ValueError("Count cannot be greater than the size of the range.")
+    return sorted(random.sample(range(n), count))
 
 

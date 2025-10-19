@@ -99,7 +99,8 @@ def create_config_here(redo_config: bool=False, leaf_count: int=1000, sequence_l
 def modify_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: int | None = None, sequence_length: int | None = None, tree_height: float | None = None, query_count: int | None = None, core_count: int | None = None,
                           query_min_length: int | None = None, fragment_count: int | None = None, nick_freq: float | None = None, overhang_parameter: float | None = None, double_strand_deamination: float | None = None, single_strand_deamination: float | None = None,
                           iqtree_seed: int | None = None, pygargammel_seed: int | None = None, query_selection_seed: int | None=None,
-                          mutation_rate: float | None = None, mutation_seed: int | None = None, disorientation_probability: float | None = None, disorientation_seed: int | None = None):
+                          mutation_rate: float | None = None, mutation_seed: int | None = None, disorientation_probability: float | None = None, disorientation_seed: int | None = None,
+                          missing_references_selection_seed: int | None = None):
     config_path = base_dir / "config.yaml"
 
     if not redo_config:
@@ -145,6 +146,8 @@ def modify_config_at_path(base_dir: Path, redo_config: bool=False, leaf_count: i
         config["disorientation_probability"] = disorientation_probability
     if disorientation_seed is not None:
         config["disorientation_seed"] = disorientation_seed
+    if missing_references_selection_seed is not None:
+        config["missing_references_selection_seed"] = missing_references_selection_seed
 
     with config_path.open("w") as f:
         yaml.dump(config, f, sort_keys=False)

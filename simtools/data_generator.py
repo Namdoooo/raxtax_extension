@@ -3,6 +3,7 @@ import yaml
 import random
 
 from pathlib import Path
+from Bio import SeqIO
 
 import simtools.fasta_editor as fasta_editor
 import raxtax_extension_prototype.utils as utils
@@ -148,6 +149,60 @@ def simulate_references_queries_with_config(config_path: Path, base_dir: Path):
 
     simulate_references_queries(base_dir, leafcount, length, treeheight, query_count, iqtree_seed, pygargammel_seed, query_selection_seed,
                                 query_min_length, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
+
+def simulate_references_missing_queries_with_config(config_path: Path, base_dir: Path, all_references_path: Path):
+    with open(config_path, "r") as file:
+        config = yaml.safe_load(file)
+
+    leafcount = config["leaf_count"]
+
+    query_count = config["query_count"]
+    query_min_length = config["query_min_length"]
+    fragment_count = config["fragment_count"]
+    nick_freq = config["nick_freq"]
+    overhang_parameter = config["overhang_parameter"]
+    double_strand_deamination = config["double_strand_deamination"]
+    single_strand_deamination = config["single_strand_deamination"]
+
+    pygargammel_seed = config.get("pygargammel_seed", None)
+    query_selection_seed = config.get("query_selection_seed", None)
+    missing_references_selection_seed = config["missing_references_selection_seed"]
+
+    all_reference_count = sum(1 for _ in SeqIO.parse(all_references_path, "fasta"))
+    missing_references_index = utils.generate_unique_numbers(all_reference_count, all_reference_count - leafcount, missing_references_selection_seed)
+
+    reference_dir = base_dir / "references"
+    utils.create_folder(reference_dir)
+
+    present_references_path = reference_dir / f"present_references.fasta"
+    missing_references_path = reference_dir / f"missing_references.fasta"
+
+    with open(present_references_path, "w") as present, \
+        open(missing_references_path, "w") as missing:
+        for i, record in enumerate(SeqIO.parse(all_references_path, "fasta")):
+            if i in missing_references_index:
+                SeqIO.write(record, missing, "fasta")
+            else:
+                SeqIO.write(record, present, "fasta")
+
+    query_dir = base_dir / "queries"
+    utils.create_folder(query_dir)
+    query_path = query_dir / f"queries.fasta"
+
+    if query_path.exists():
+        print("[INFO] queries.fasta already exists, skipping creation.")
+    else:
+        run_pygargammel_simulation(query_dir, missing_references_path, pygargammel_seed, query_min_length, fragment_count,
+                                   nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
+
+    query_new_path = query_dir / f"queries_{query_count}.fasta"
+    x = (leafcount * fragment_count) // query_count
+
+    if query_new_path.exists():
+        print("[INFO] " + f"queries_{query_count}.fasta" + "already exists, skipping creation.")
+    else:
+        fasta_editor.sample_fasta_every_x(query_path, query_new_path, x, query_selection_seed)
+
 
 if __name__ == "__main__":
     seeds = []
