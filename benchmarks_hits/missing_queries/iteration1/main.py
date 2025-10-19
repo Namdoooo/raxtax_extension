@@ -34,7 +34,6 @@ if __name__ == '__main__':
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
 
     iteration_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    iteration_list = [1]
     main_dir_list = []
 
     create_config_at_path(base_dir=base_dir, redo_config=False, leaf_count=1100, sequence_length=50000, tree_height=0.1, iqtree_seed=utils.create_random_seed())
