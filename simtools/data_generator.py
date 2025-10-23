@@ -196,7 +196,7 @@ def simulate_references_missing_queries_with_config(config_path: Path, base_dir:
                                    nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
 
     query_new_path = query_dir / f"queries_{query_count}.fasta"
-    x = (leafcount * fragment_count) // query_count
+    x = ((all_reference_count - leafcount) * fragment_count) // query_count
 
     if query_new_path.exists():
         print("[INFO] " + f"queries_{query_count}.fasta" + "already exists, skipping creation.")

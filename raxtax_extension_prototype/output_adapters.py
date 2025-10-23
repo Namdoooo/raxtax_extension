@@ -58,7 +58,7 @@ def output_sim_miseq(results, reference_names, runtime_info, result_dir: Path, c
             for (n, p) in filtered_result:
                 f.write(str(n) + ": " + str(p) + "\n")
 
-            if filtered_result[0][1] >= confidence_threshold:
+            if filtered_result[0][1] > confidence_threshold:
                 if filtered_result[0][0] == query_name_short:
                     tp += 1
                 elif query_name_short in reference_names_short:
@@ -132,10 +132,13 @@ def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_e
             if filtered_result[0][1] > confidence_threshold:
                 if filtered_result[0][0] == query_name:
                     tp += 1
-                else:
+                elif query_name in reference_names:
                     mc += 1
+                else:
+                    fp += 1
             else:
-                fn += 1
+                if query_name in reference_names:
+                    fn += 1
     average_prob_calculation_time /= len(results)
 
     if tp == 0:
