@@ -126,31 +126,72 @@ def plot_benchmark(
     else:
         plt.show()
 
+def plot_paired_lines(
+    df: pd.DataFrame,
+    id_col: str,
+    value_col: str,
+    condition_col: str,
+    xlabel: str = None,
+    ylabel: str = None,
+    title: str = None,
+    color: str = "#ED6D52",
+    linewidth: float = None,
+    alpha: float = None,
+    marker: str = "o",
+    markersize: int = None,
+    rotation: int = 0,
+    save_path: str | Path = None
+):
+    """
+    Paired line plot using seaborn styling for consistency across plots.
+    All lines and points are in the same color.
+    """
+
+    # Prepare x-axis mapping
+    conditions = sorted(df[condition_col].unique())
+    cond_map = {cond: i for i, cond in enumerate(conditions)}
+    df["_x"] = df[condition_col].map(cond_map)
+
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(6, 4))
+
+    # Plot one line per ID (each pair)
+    for _, group in df.groupby(id_col):
+        if len(group) == 2:
+            sns.lineplot(
+                data=group,
+                x="_x",
+                y=value_col,
+                sort=False,
+                linewidth=linewidth,
+                alpha=alpha,
+                marker=marker,
+                markersize=markersize,
+                color=color
+            )
+
+    plt.xticks([0, 1], conditions, rotation=rotation)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if title:
+        plt.title(title)
+
+    plt.grid(True, axis="y")
+    plt.tight_layout()
+
+    if save_path:
+        save_path = Path(save_path)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300)
+        print(f"Saved plot to {save_path}")
+    else:
+        plt.show()
+
 if __name__ == "__main__":
-    rng = np.random.default_rng(42)
+    df = pd.DataFrame({
+        "DB": ["db1", "db1", "db2", "db2", "db3", "db3"],
+        "F1": [0.87, 0.91, 0.85, 0.89, 0.83, 0.88],
+        "Classifier": ["sintax", "raxtax"] * 3
+    })
 
-    threads = [1, 2, 4, 8, 16]
-    methods = ["raxtax", "sintax"]
-
-    rows = []
-    for method in methods:
-        for t in threads:
-            # simulate 5 runs per (method, thread)
-            for run in range(5):
-                base_time = (1000 / t) * (1.0 if method == "raxtax" else 0)
-                noise = rng.normal(0, base_time * 0.25)  # 5% noise
-                rows.append({"Threads": t, "Runtime": base_time + noise, "Method": method})
-
-    df = pd.DataFrame(rows)
-
-    print(df)
-
-
-    plot_benchmark(
-        df,
-        x_col="Threads",
-        y_col="Runtime",
-        hue_col="Method",
-        error="sd",
-        xgrid_exact=True,
-    )
+    plot_paired_lines(df, id_col="DB", value_col="F1", condition_col="Classifier", ylabel="F1 Score")

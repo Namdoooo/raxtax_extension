@@ -3,6 +3,9 @@ import pandas as pd
 
 from analysis.metadata_loader import aggregate_all_iterations
 from analysis.viz import plot_benchmark
+from analysis.viz import plot_paired_lines
+from analysis.significance_analyzer import run_significance_analysis
+from numpy.lib.function_base import interp
 from raxtax_extension_prototype.utils import create_folder
 
 if __name__=="__main__":
@@ -56,3 +59,36 @@ if __name__=="__main__":
 
         plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                        xgrid_exact=True, error="sd", save_path=plot_path)
+
+    #create paired line plot
+    df_all_tree_height_complement = pd.read_csv(combined_metadata_path)
+    tree_height_benchmark_metadata_path = base_dir.parent / "tree_height_benchmark" / "combined_metadata.csv"
+    print(combined_metadata_path)
+    print(tree_height_benchmark_metadata_path)
+    df_all_tree_height_benchmark = pd.read_csv(tree_height_benchmark_metadata_path)
+
+    iteration_name = "iteration"
+    cond_var_name = "method"
+    ylabel = "F1 Score"
+    group_names = ["oriented queries", "disoriented queries"]
+    df_tree_height_benchmark = df_all_tree_height_benchmark[[independent_var_name, dependent_var_name]]
+    df_tree_height_complement = df_all_tree_height_complement[[independent_var_name, dependent_var_name]]
+
+    df_mean_tree_height_benchmark = df_tree_height_benchmark.groupby(independent_var_name).mean()
+    df_mean_tree_height_benchmark = df_mean_tree_height_benchmark.copy()
+    df_mean_tree_height_benchmark[cond_var_name] = group_names[0]
+
+    df_mean_tree_height_complement = df_tree_height_complement.groupby(independent_var_name).mean()
+    df_mean_tree_height_complement = df_mean_tree_height_complement.copy()
+    df_mean_tree_height_complement[cond_var_name] = group_names[1]
+
+    df_combined = pd.concat([df_mean_tree_height_benchmark, df_mean_tree_height_complement])
+
+    paired_line_plot_path = base_dir / "paired_line_tree_height_f1_plot.pdf"
+    plot_paired_lines(df=df_combined, id_col=independent_var_name, value_col=dependent_var_name, condition_col=cond_var_name, ylabel=ylabel, save_path=paired_line_plot_path)
+
+    #execute significance analysis
+    significance_result_path = base_dir / "significance_test.tsv"
+    run_significance_analysis(df=df_combined, id_col=independent_var_name, value_col=dependent_var_name, condition_col=cond_var_name,
+                              group_names=group_names, output_path=significance_result_path, alternative="greater")
+
