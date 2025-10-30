@@ -120,8 +120,10 @@ def run_main_list(main_dir_list: list[Path]):
             if "raxtax" in rel_parts:
                 rel_parts = rel_parts[rel_parts.index("raxtax") + 1 :]
             module_path = ".".join(rel_parts)
+            time_log_path = "/".join(rel_parts[:-1]) + "/time.log"
+            print(time_log_path)
             print(f"Running {module_path}...")
-            subprocess.run(["python", "-m", module_path], check=True)
+            subprocess.run(["usr/bin/time", "-v", "-o", time_log_path,"python", "-m", module_path], check=True)
 
 if __name__ == "__main__":
     pass
