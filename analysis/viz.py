@@ -95,6 +95,7 @@ def plot_benchmark(
         y_vals = ref_slope * x_vals + ref_intercept  # slope=1, intercept=0
         plt.plot(x_vals, y_vals, "--", color=ref_color, label=ref_label, linewidth=2)
 
+    #plt.ylim(0, 0.7)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if title:
