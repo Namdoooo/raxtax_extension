@@ -1,3 +1,5 @@
+import subprocess
+
 import numpy as np
 import re
 from pathlib import Path
@@ -162,4 +164,22 @@ def generate_unique_numbers(n, count, seed=None):
         raise ValueError("Count cannot be greater than the size of the range.")
     return sorted(random.sample(range(n), count))
 
+def create_tar_archive(output_path: Path, input_paths:list[Path]) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    cmd = ["tar", "-czvf", output_path] + input_paths
+    subprocess.run(cmd, check=True)
+    print(f"archive created at {output_path}")
 
+    if output_path.exists():
+        for input_path in input_paths:
+            subprocess.run(["rm", "-rf", str(input_path)])
+
+if __name__ == "__main__":
+    base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
+    base_dir = base_dir.parent / "benchmarks_old" / "small_test"
+    for i in ["iteration1", "iteration2"]:
+        for j in ["t001", "t003", "t005", "t007", "t009"]:
+            dir = base_dir / i / j
+            output_path = dir / "dataset.tgz"
+            input_paths = [dir / "queries/", dir / "references/"]
+            create_tar_archive(output_path, input_paths)
