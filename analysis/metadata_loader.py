@@ -72,6 +72,31 @@ def aggregate_all_iterations(base_dir: Path, independent_var_name: str):
 
     return combined_metadata_path
 
+def aggregate_all_iterations_with_list(base_dir: Path, independent_var_name: str, iteration_dir_list: list):
+    iteration_col_name = "iteration"
+
+    dfs = []
+
+    for iteration_dir in iteration_dir_list:
+        print(f"Processing: {iteration_dir}")
+
+        aggregated_metadata_path = aggregate_iteration(iteration_dir, independent_var_name=independent_var_name)
+        df = pd.read_csv(aggregated_metadata_path)
+        df[iteration_col_name] = iteration_dir.name.strip(iteration_col_name)
+        dfs.append(df)
+
+    df_all = pd.concat(dfs, ignore_index=True)
+    target_cols = ["iteration", independent_var_name]
+    cols = target_cols + [col for col in df_all.columns if col not in target_cols]
+    df_all = df_all[cols]
+    df_all = df_all.sort_values(by=[iteration_col_name, independent_var_name])
+
+    combined_metadata_path = base_dir / "combined_metadata.csv"
+    df_all.to_csv(combined_metadata_path, index=False)
+    print(f"Saved: {combined_metadata_path}")
+
+    return combined_metadata_path
+
 def aggregate_memory_iteration(iteration_path: Path, independent_var_name: str):
 
     exp_dir_list = sorted([p for p in iteration_path.iterdir() if p.is_dir() and p.name != "__pycache__"])
