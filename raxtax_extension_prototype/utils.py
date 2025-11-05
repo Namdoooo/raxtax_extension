@@ -178,13 +178,13 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
     base_dir = base_dir.parent / "benchmarks_hits"
 
-    for k in ["alternation", "alternation_m004", "alternation_m008", "alternation_t003"]:
+    for k in ["alternation_m004", "alternation_m008", "alternation_t003"]:
         for i  in range(1, 31):
             for j in ["oriented", "disoriented"]:
-                dir = base_dir / k / f"iteration{i}" / j
+                dir = base_dir / k / j / f"iteration{i}"
                 output_path = dir / "dataset.tgz"
                 input_paths = [dir / "queries/", dir / "references/"]
-                create_tar_archive(output_path, input_paths)
+                #create_tar_archive(output_path, input_paths)
 
     for j in [0, 1, 2, 4, 8, 16, 24, 32, 40, 48]:
         for i in range(1, 6):
