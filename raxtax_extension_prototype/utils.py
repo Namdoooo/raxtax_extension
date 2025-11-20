@@ -181,6 +181,8 @@ if __name__ == "__main__":
     for k in ["alternation_m004", "alternation_m008", "alternation_t003", "alternation_t017"]:
         for i  in range(1, 31):
             for j in ["oriented", "disoriented"]:
+                if i == 1 and j == "oriented" and k == "alternation_m004":
+                    continue
                 dir = base_dir / k / j / f"iteration{i}"
                 output_path = dir / "dataset.tgz"
                 input_paths = [dir / "queries/", dir / "references/"]
