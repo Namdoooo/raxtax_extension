@@ -178,61 +178,10 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
     base_dir = base_dir.parent / "benchmarks_hits"
 
-    for k in ["alternation_m004", "alternation_m008", "alternation_t003"]:
+    for k in ["alternation_m004", "alternation_m008", "alternation_t003", "alternation_t017"]:
         for i  in range(1, 31):
             for j in ["oriented", "disoriented"]:
                 dir = base_dir / k / j / f"iteration{i}"
                 output_path = dir / "dataset.tgz"
                 input_paths = [dir / "queries/", dir / "references/"]
-                #create_tar_archive(output_path, input_paths)
-
-    for j in [0, 1, 2, 4, 8, 16, 24, 32, 40, 48]:
-        for i in range(1, 6):
-            dir = base_dir / "core_count_benchmark" / f"iteration{i}" / f"core{j}"
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
-
-    for i in range(1, 6):
-        for j in range(1, 11):
-            dir = base_dir / "missing_queries" / f"iteration{i}" / f"iteration{j}"
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
-
-    for i in range(1, 6):
-        for j in ["m0", "m001", "m002", "m003", "m004", "m005", "m006", "m007", "m008", "m009"]:
-            dir = base_dir / "mutation_rate" / f"iteration{i}" / j
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
-
-    for k in ["query_count_benchmark", "query_memory_benchmark"]:
-        for i in range(1, 6):
-            for j in [100, 200, 300, 400, 500, 600, 800]:
-                dir = base_dir / k / f"iteration{i}" / f"query_count{j}"
-                output_path = dir / "dataset.tgz"
-                input_paths = [dir / "queries/", dir / "references/"]
                 create_tar_archive(output_path, input_paths)
-
-    for k in ["reference_count_benchmark", "reference_memory_benchmark"]:
-        for i in range(1, 6):
-            for j in [400, 800, 1200, 1600, 2000, 2400, 2800, 3200]:
-                dir = base_dir / k / f"iteration{i}" / f"leaf_count{j}"
-                output_path = dir / "dataset.tgz"
-                input_paths = [dir / "queries/", dir / "references/"]
-                create_tar_archive(output_path, input_paths)
-
-    for i in range(1, 6):
-        for j in [20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]:
-            dir = base_dir / "sequence_length_benchmark" / f"iteration{i}" / f"sequence_length{j}"
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
-
-    for i in range(1, 6):
-        for j in ["t001", "t003", "t005", "t007", "t009", "t011", "t013", "t015", "t017", "t019"]:
-            dir = base_dir / "tree_height_benchmark" / f"iteration{i}" / j
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
