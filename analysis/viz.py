@@ -188,11 +188,197 @@ def plot_paired_lines(
     else:
         plt.show()
 
+
+def plot_paired_boxplot(
+    df: pd.DataFrame,
+    value_col: str,
+    condition_col: str,
+    title: str = None,
+    ylabel: str = "Value",
+    save_path: str | Path = None,
+    palette: list | dict | str | None = ["#ED6D52", "#58BBCC"],
+    ylim: tuple[float, float] = None
+):
+    """
+    Plots side-by-side boxplots for paired data (e.g., two methods or classifiers).
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input dataframe with one column for values and one for conditions/groups.
+    value_col : str
+        Name of the column containing numeric values.
+    condition_col : str
+        Name of the column identifying the two conditions (e.g., "method").
+    title : str, optional
+        Plot title.
+    ylabel : str
+        Y-axis label.
+    save_path : str or Path, optional
+        If provided, saves the plot to this path.
+    palette : list, dict, str, or None
+        Seaborn color palette.
+    ylim : tuple(float, float) or None, default=(0, 1)
+        Y-axis limits. Set to None to disable fixed range.
+    """
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(6, 5))
+
+    ax = sns.boxplot(
+        data=df,
+        x=condition_col,
+        y=value_col,
+        hue=condition_col,
+        palette=palette,
+        width=0.5,
+    )
+
+    """
+    sns.stripplot(
+        data=df,
+        x=condition_col,
+        y=value_col,
+        color="black",
+        size=5,
+        jitter=True,
+        alpha=0.6
+    )"""
+
+    ax.set_xlabel(None)
+    ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title)
+
+    if ylim is not None:
+        ax.set_ylim(*ylim)
+
+    plt.tight_layout()
+
+    if save_path:
+        save_path = Path(save_path)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300)
+        print(f"Saved boxplot to {save_path}")
+    else:
+        plt.show()
+
+
+def plot_grouped_boxplots(
+    df: pd.DataFrame,
+    x_col: str,         # e.g., "metric"
+    y_col: str,         # e.g., "value"
+    hue_col: str,       # e.g., "method"
+    title: str = None,
+    ylabel: str = "Value",
+    xlabel: str = "Metric",
+    ylim: tuple[float, float] = None,
+    palette: list | dict | str | None = ["#ED6D52", "#58BBCC"],
+    save_path: str | Path = None
+):
+    """
+    Plot grouped boxplots comparing metrics between methods.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input dataframe (long format).
+    x_col : str
+        Column for x-axis grouping (e.g., metrics).
+    y_col : str
+        Column for y-axis values.
+    hue_col : str
+        Column that distinguishes the groups (e.g., method).
+    title : str, optional
+        Plot title.
+    ylabel : str
+        Label for y-axis.
+    xlabel : str
+        Label for x-axis.
+    ylim : tuple(float, float) or None
+        Y-axis limits.
+    palette : list, dict, or str
+        Colors for the hue groups.
+    save_path : str or Path
+        If provided, saves the figure.
+    """
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(8, 5))
+
+    ax = sns.boxplot(
+        data=df,
+        x=x_col,
+        y=y_col,
+        hue=hue_col,
+        palette=palette,
+        #showmeans=True,
+        meanprops={"marker": "o", "markerfacecolor": "black", "markeredgecolor": "black"}
+    )
+
+    """
+    sns.stripplot(
+        data=df,
+        x=x_col,
+        y=y_col,
+        hue=hue_col,
+        dodge=True,
+        palette="dark:black",
+        size=4,
+        jitter=True,
+        alpha=0.5,
+        legend=False
+    )"""
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title)
+
+    if ylim:
+        ax.set_ylim(*ylim)
+
+    # Move legend outside
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(
+        handles[:len(set(df[hue_col]))],
+        labels[:len(set(df[hue_col]))],
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.12),
+        ncol=len(set(df[hue_col])),
+        frameon=False
+    )
+
+    plt.tight_layout()
+
+    if save_path:
+        save_path = Path(save_path)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300)
+        print(f"Plot saved to {save_path}")
+    else:
+        plt.show()
+
+
 if __name__ == "__main__":
     df = pd.DataFrame({
-        "DB": ["db1", "db1", "db2", "db2", "db3", "db3"],
-        "F1": [0.87, 0.91, 0.85, 0.89, 0.83, 0.88],
-        "Classifier": ["sintax", "raxtax"] * 3
+        "method": ["oriented queries"] * 3 + ["disoriented queries"] * 3,
+        "f1_score": [0.91, 0.89, 0.87, 0.85, 0.82, 0.84]
     })
 
-    plot_paired_lines(df, id_col="DB", value_col="F1", condition_col="Classifier", ylabel="F1 Score")
+    plot_paired_boxplot(df, value_col="f1_score", condition_col="method", ylim=None)
+
+    # Beispiel-DataFrame erzeugen
+    df = pd.DataFrame({
+        "metric": ["accuracy"] * 6 + ["f1_score"] * 6,
+        "value": [0.85, 0.87, 0.86, 0.80, 0.82, 0.81, 0.75, 0.78, 0.77, 0.70, 0.72, 0.73],
+        "method": ["Method A"] * 3 + ["Method B"] * 3 + ["Method A"] * 3 + ["Method B"] * 3
+    })
+
+    # Funktion aufrufen
+    plot_grouped_boxplots(
+        df,
+        x_col="metric",
+        y_col="value",
+        hue_col="method",
+        ylabel="Score",
+        xlabel="Metrik",
+    )
