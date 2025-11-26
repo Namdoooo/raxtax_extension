@@ -37,6 +37,12 @@ if __name__=="__main__":
     plot_benchmark(df, "core_count", "speed_up", "name", "Threads", "rel. Speedup",
                    xgrid_exact=True, error="sd", save_path=plot_path, ref_slope=1, ref_intercept=0, ref_label="ideal")
 
+    df_mean = df.groupby(independent_var_name)["speed_up"].agg("mean").reset_index()
+    df_std = df.groupby(independent_var_name)["speed_up"].agg("std").reset_index()
+    print("Mean")
+    print(df_mean)
+    print("Standard Deviation")
+    print(df_std)
 
 
 

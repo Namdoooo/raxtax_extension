@@ -24,6 +24,13 @@ if __name__=="__main__":
 
     df_selected = df_all[[independent_var_name, dependent_var_name]]
     df_selected[hue_col_name] = hue_name
+    df_mean = df_selected.groupby(independent_var_name)[dependent_var_name].agg("mean").reset_index()
+    df_std = df_selected.groupby(independent_var_name)[dependent_var_name].agg("std").reset_index()
+    print("Mean")
+    print(df_mean)
+    print("Standard Deviation")
+    print(df_std)
+    print(df_selected)
 
     plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                    xgrid_exact=True, error="sd", save_path=plot_path)
@@ -57,5 +64,4 @@ if __name__=="__main__":
         hue_col_name = "name"
         df_selected[hue_col_name] = "raxtax+"
 
-        plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
-                       xgrid_exact=True, error="sd", save_path=plot_path)
+        plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel, xgrid_exact=True, error="sd", save_path=plot_path)

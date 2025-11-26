@@ -27,6 +27,16 @@ if __name__=="__main__":
     plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                    xgrid_exact=True, error="sd", save_path=plot_path)
 
+    df_mean = df_selected.groupby(independent_var_name)[dependent_var_name].agg("mean").reset_index()
+    df_std = df_selected.groupby(independent_var_name)[dependent_var_name].agg("std").reset_index()
+    print("Mean")
+    print(df_mean)
+    print("Standard Deviation")
+    print(df_std)
+
+    cov = df_std[dependent_var_name] / df_mean[dependent_var_name]
+    print("CoV")
+    print(cov)
 
     dependent_var_names = ["reference_count", "query_count", "total_execution_time", "reference_parse_time",
                            "query_parse_time", "orient_queries_time", "calculate_intersection_sizes_time",
