@@ -2,7 +2,6 @@ import psutil
 import subprocess
 import sys
 import time
-from datetime import datetime
 
 memory_result_path = sys.argv[1]
 CMD = sys.argv[2:]
@@ -37,7 +36,7 @@ while p.poll() is None:
     except psutil.NoSuchProcess:
         break
 
-    time.sleep(0.01)  # 10 ms – sehr sichere Auflösung
+    time.sleep(0.01)  # 10 ms
 
 cmd_str = " ".join(CMD)
 peak_gb = peak / 1024 / 1024 / 1024
@@ -46,7 +45,6 @@ children_peak_gb = children_peak / 1024 / 1024 / 1024
 
 file_name = CMD[-1].split(".")[-1]
 
-#with open("benchmarks_memory/test_h5py/psutil_memory_results.csv", "a") as f:
 with open(memory_result_path, "a") as f:
     f.write(f"{cmd_str} \n")
     f.write(f"{file_name} peak (GB): {peak_gb} \n")
