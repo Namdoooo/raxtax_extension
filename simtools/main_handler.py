@@ -27,3 +27,17 @@ if __name__ == "__main__":
     if redo_main or not main_path.exists():
         main_path.write_text(script)
         print(f"[INFO] Created main.py at: {main_path}")
+
+def create_executable_at_path(base_dir: Path, func_name: str, file_name: str, redo_executable: bool = False):
+    script = f"""\
+from simtools.simulator import {func_name}
+
+if __name__ == "__main__":
+    {func_name}()
+        """
+
+    executable_path = base_dir / file_name
+
+    if redo_executable or not executable_path.exists():
+        executable_path.write_text(script)
+        print(f"[INFO] Created {file_name} at: {executable_path}")
