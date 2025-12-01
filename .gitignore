@@ -9,6 +9,7 @@ benchmarks_hits/**
 
 benchmarks_missing/**
 benchmarks_old/**
+benchmarks_memory/**
 
 validator/example/
 
