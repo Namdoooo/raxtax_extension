@@ -57,7 +57,7 @@ if __name__ == '__main__':
                               disorientation_seed=disorientation_seed)
 
         executable_dir = config_dir
-        create_executable_at_path(base_dir=executable_dir, func_name="generate_dateset", file_name="generate_dateset.py", redo_executable=False)
+        create_executable_at_path(base_dir=executable_dir, func_name="generate_dataset", file_name="generate_dataset.py", redo_executable=False)
         create_executable_at_path(base_dir=executable_dir, func_name="calculate_lookup", file_name="calculate_lookup.py", redo_executable=False)
         create_executable_at_path(base_dir=executable_dir, func_name="execute_raxtax", file_name="execute_raxtax.py", redo_executable=False)
 
