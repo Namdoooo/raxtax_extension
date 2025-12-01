@@ -127,7 +127,7 @@ def run_main_list(main_dir_list: list[Path]):
             #subprocess.run(["/usr/bin/time", "-v", "-o", time_log_path,"python", "-m", module_path], check=True)
             subprocess.run(["python", "-m", module_path], check=True)
 
-def generate_dateset(config_dir: Path | None = None) :
+def generate_dataset(config_dir: Path | None = None) :
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     if config_dir is None:
         config_dir = base_dir
