@@ -204,8 +204,13 @@ def run_executable_dir_list(executable_dir_list: list[Path]) :
         memory_profiler_path = "simtools/memory_profiler.py"
         memory_result_path = executable_dir / "psutil_memory_results.csv"
 
+        print(f"Running {generate_dataset_path}...")
         subprocess.run(["python", memory_profiler_path, memory_result_path, "python", "-m", generate_dataset_path], check=True)
+
+        print(f"Running {calculate_lookup_path}...")
         subprocess.run(["python", memory_profiler_path, memory_result_path, "python", "-m", calculate_lookup_path], check=True)
+
+        print(f"Running {execute_raxtax_path}...")
         subprocess.run(["python", memory_profiler_path, memory_result_path, "python", "-m", execute_raxtax_path], check=True)
 
 
