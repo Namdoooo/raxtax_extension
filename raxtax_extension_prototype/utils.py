@@ -8,6 +8,9 @@ import random
 import raxtax_extension_prototype.constants as constants
 
 def kmer_to_index(kmer: str) -> int:
+    """
+    Converts a k-mer string to an integer representation using a 2-bit encoding.
+    """
     base_to_bits = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
     index = 0
     for base in kmer:
@@ -17,6 +20,9 @@ def kmer_to_index(kmer: str) -> int:
     return index
 
 def sequence_to_kmer_set(seq: str, k: int = 8) -> list[int]:
+    """
+    Converts a k-mer string to its set of k-mers in integer representation.
+    """
     kmer_set = set()
 
     for i in range(len(seq) - k + 1):
@@ -28,14 +34,23 @@ def sequence_to_kmer_set(seq: str, k: int = 8) -> list[int]:
     return sorted(kmer_set)
 
 def complement_sequence_str(sequence: str) -> str:
+    """
+    Computes the complementary sequence.
+    """
     complement_table = str.maketrans("ACGTacgt", "TGCAtgca")
     return sequence.translate(complement_table)
 
 def complement_kmer_index(kmer: int, k: int = constants.K):
+    """
+    Computes the integer representation of the complementary k-mer.
+    """
     mask = (1 << (2 * k)) - 1
     return kmer ^ mask
 
 def create_random_seed() -> int:
+    """
+    Generates a random 32-bit integer seed.
+    """
     seed = np.random.randint(0, 2 ** 32 - 1)
     return seed
 
@@ -61,93 +76,17 @@ def extract_trailing_number(value: Union[str, Path]) -> float:
         #print(f"Extracted (integer): {int_value} from '{s}'")
         return int_value
 
-def sort_lists_by_first(a: list, b: list) -> (list, list):
-    """
-    Sorts two lists based on the values in the first list.
-
-    Returns:
-        A tuple of two lists, both sorted according to the order of the first list.
-
-    Raises:
-        ValueError: if the input lists are not of equal length.
-    """
-    if len(a) != len(b):
-        raise ValueError("Both input lists must be of the same length.")
-
-    sorted_pairs = sorted(zip(a, b))
-    a_sorted, b_sorted = zip(*sorted_pairs)
-    return list(a_sorted), list(b_sorted)
-
-def compare_sequences(str1: str, str2: str) -> int:
-    if len(str1) != len(str2):
-        raise ValueError()
-
-    count = 0
-
-    for i in range(len(str1)):
-        if str1[i] != str2[i]:
-            count += 1
-    return count
-
-def compare_files(file1: str, file2: str) -> bool:
-    """
-    Compare two text files line by line.
-
-    Prints how many lines each file has, and for the overlapping part,
-    prints differing lines with their line numbers.
-
-    Args:
-        file1: Path to the first file.
-        file2: Path to the second file.
-
-    Returns:
-        True if files are identical, False otherwise.
-    """
-    with open(file1, "r", encoding="utf-8") as f1:
-        lines1 = f1.readlines()
-    with open(file2, "r", encoding="utf-8") as f2:
-        lines2 = f2.readlines()
-
-    len1, len2 = len(lines1), len(lines2)
-    print(f"{file1}: {len1} lines")
-    print(f"{file2}: {len2} lines")
-
-    identical = True
-    if len1 != len2:
-        identical = False
-
-    min_len = min(len1, len2)
-
-    for lineno in range(min_len):
-        if lines1[lineno] != lines2[lineno]:
-            print(f"Difference at line {lineno + 1}:")
-            print(f"  {file1}: {lines1[lineno].rstrip()}")
-            print(f"  {file2}: {lines2[lineno].rstrip()}")
-            identical = False
-
-    if len1 != len2:
-        print("\n Files have different lengths.")
-        if len1 > len2:
-            for lineno in range(min_len, len1):
-                print(f"Extra line in {file1} at {lineno + 1}: {lines1[lineno].rstrip()}")
-        else:
-            for lineno in range(min_len, len2):
-                print(f"Extra line in {file2} at {lineno + 1}: {lines2[lineno].rstrip()}")
-        identical = False
-
-    if identical:
-        print("Files have identical lines.")
-    else:
-        print("Files dont have identical lines.")
-
-    return identical
-
 def float_to_string_without_point(num: float) -> str:
-    # Erst als String mit möglichst wenig Nachkommastellen darstellen
+    """
+    Converts a floating-point number to a string without a decimal point.
+    """
     s = format(num, 'f').rstrip('0').rstrip('.')
     return s.replace(".", "")
 
 def create_folder(path: Union[Path, str]) -> None:
+    """
+    Creates a directory if it does not already exist.
+    """
 
     folder_path = Path(path)
     folder_path.mkdir(parents=True, exist_ok=True)
@@ -155,6 +94,9 @@ def create_folder(path: Union[Path, str]) -> None:
     #print(f"[INFO] directory created or existed: {folder_path.resolve()}")
 
 def generate_unique_numbers(n, count, seed=None):
+    """
+    Generates a sorted list of unique random integers from a given range.
+    """
     if seed is not None:
         random.seed(seed)
     if count > n:
@@ -162,6 +104,10 @@ def generate_unique_numbers(n, count, seed=None):
     return sorted(random.sample(range(n), count))
 
 def create_tar_archive(output_path: Path, input_paths:list[Path]) -> None:
+    """
+    Creates a compressed tar archive from the specified input paths and
+    removes the original files or directories after archiving.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = ["tar", "-czvf", output_path] + input_paths
     subprocess.run(cmd, check=True)
