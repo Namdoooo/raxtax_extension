@@ -44,6 +44,16 @@ if __name__=="__main__":
     print("Standard Deviation")
     print(df_std)
 
+    x1 = 1
+    x2 = 24
+    slope = (df_mean.loc[df_mean[independent_var_name] == x2, "speed_up"].values[0] - df_mean.loc[df_mean[independent_var_name] == x1, "speed_up"].values[0]) / (x2 - x1)
+    print(f"Slope: {round(slope, 3)}")
+
+    x1 = 24
+    x2 = 48
+    slope = (df_mean.loc[df_mean[independent_var_name] == x2, "speed_up"].values[0] - df_mean.loc[df_mean[independent_var_name] == x1, "speed_up"].values[0]) / (x2 - x1)
+    print(f"Slope: {round(slope, 3)}")
+
 
 
     independent_var_name = "core_count"

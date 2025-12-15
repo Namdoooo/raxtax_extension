@@ -8,14 +8,14 @@ from raxtax_extension_prototype.utils import create_folder
 if __name__=="__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
 
-    independent_var_name = "leaf_count"
-    xlabel = "Reference Count"
-    dependent_var_name = "calculate_intersection_sizes_time"
-    ylabel = "Time (s)"
+    independent_var_name = "mutation_rate"
+    xlabel = "Substitution Rate"
+    dependent_var_name = "f1_score"
+    ylabel = "F1 Score"
     hue_col_name = "name"
     hue_name = "raxtax+"
 
-    plot_name = "leaf_count_vs_calculate_intersection_sizes_time.pdf"
+    plot_name = f"{independent_var_name}_vs_{dependent_var_name}.pdf"
     plot_path = base_dir / plot_name
 
     combined_metadata_path = aggregate_all_iterations(base_dir, independent_var_name)
@@ -23,10 +23,6 @@ if __name__=="__main__":
     df_all[hue_col_name] = hue_name
 
     df_selected = df_all[[independent_var_name, dependent_var_name, hue_col_name]]
-
-    plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
-                   xgrid_exact=True, error="sd", save_path=plot_path)
-
     df_mean = df_selected.groupby(independent_var_name)[dependent_var_name].agg("mean").reset_index()
     df_std = df_selected.groupby(independent_var_name)[dependent_var_name].agg("std").reset_index()
     print("Mean")
@@ -34,9 +30,8 @@ if __name__=="__main__":
     print("Standard Deviation")
     print(df_std)
 
-    cov = df_std[dependent_var_name] / df_mean[dependent_var_name]
-    print("CoV")
-    print(cov)
+    plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
+                   xgrid_exact=True, error="sd", save_path=plot_path)
 
 
     dependent_var_names = ["reference_count", "query_count", "total_execution_time", "reference_parse_time",
@@ -64,5 +59,5 @@ if __name__=="__main__":
 
         df_selected = df_all[[independent_var_name, dependent_var_name, hue_col_name]]
 
-        plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
-                       xgrid_exact=True, error="sd", save_path=plot_path)
+        #plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
+         #              xgrid_exact=True, error="sd", save_path=plot_path)
