@@ -1,4 +1,10 @@
-import numpy as np
+"""
+fasta_editor.py
+
+Purpose
+-------
+Provides utility functions for creating and modifying fasta files.
+"""
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
@@ -25,7 +31,6 @@ def phy_to_fasta(phy_path, fasta_path):
         fasta_lines.append(f">{name}")
         fasta_lines.append(sequence)
 
-    # Write to FASTA file
     with open(fasta_path, 'w') as fasta_file:
         fasta_file.write('\n'.join(fasta_lines))
 
@@ -73,15 +78,16 @@ def complement_alternate_fasta(input_path, output_path):
             else:
                 sequence = line.strip()
                 if entry_idx % 2 == 1:
-                    # Jeden zweiten Eintrag (1, 3, 5, ...) komplementieren
                     sequence = sequence.translate(complement)
                 outfile.write(sequence + os.linesep)
     print(f"[INFO] Complemented alternate sequences written to {output_path}")
 
 def complement_fasta_with_probability(input_path, output_path, p: float = 0.5, seed: int | None = None):
+    """
+        Complements each sequence independently with probability p.
+    """
     complement = str.maketrans("ACGTacgt", "TGCAtgca")
 
-    # Seed setzen
     if seed is None:
         seed = utils.create_random_seed()
         print(f"[INFO] Using randomly generated seed: {seed}")
@@ -102,7 +108,6 @@ def complement_fasta_with_probability(input_path, output_path, p: float = 0.5, s
 
     print(f"[INFO] Sequences written to {output_path} with {p*100:.0f}% complement probability.")
 
-    # Write log file
     log_path = output_path.with_suffix(output_path.suffix + ".log")
     with open(log_path, "w") as log_file:
         log_file.write("COMPLEMENT FASTA WITH PROBABILITY P LOG\n")
@@ -117,26 +122,30 @@ def complement_fasta_with_probability(input_path, output_path, p: float = 0.5, s
     return seed
 
 def disorient_fasta(input_path, output_path, p: float = 0.5, seed: int | None = None):
+    """
+        Complements each sequence independently with probability 50%.
+    """
     return complement_fasta_with_probability(input_path, output_path, p=0.5, seed=seed)
 
 def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = None):
+    """
+        Partitions the input file into blocks of size x, randomly
+        samples one sequence per block, and writes the sampled sequences
+        to the specified output path.
+    """
 
-    # Seed setzen
     if seed is None:
         seed = utils.create_random_seed()
         print(f"[INFO] Using randomly generated seed: {seed}")
     else:
         print(f"[INFO] Using provided seed: {seed}")
-    #rng = np.random.default_rng(seed)
     random.seed(seed)
 
-    # Read all records
     records = list(SeqIO.parse(input_path, "fasta"))
 
     new_records = []
 
     for i in range(len(records) // x):
-        #rnd_ind = rng.integers(0, x)
         rnd_ind = random.randint(0, x - 1)
         new_records.append(records[i * x + rnd_ind])
 
@@ -144,7 +153,6 @@ def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = N
 
     print(f"[INFO] Wrote {len(new_records)} sequences to {output_path}")
 
-    # Write log file
     log_path = os.path.splitext(output_path)[0] + ".log"
     with open(log_path, "w") as log_file:
         log_file.write("FASTA EVERY X Log\n")
@@ -159,9 +167,12 @@ def sample_fasta_every_x(input_path: str, output_path: str, x = 1, seed: int = N
     return seed
 
 def mutate_fasta(input_path, output_path, mutation_rate, seed=None):
+    """
+        Mutates each nucleotide independently with probability mutation_rate by
+        replacing it with a different nucleotide.
+     """
     bases = ["A", "C", "G", "T"]
 
-    # Seed setzen
     if seed is None:
         seed = random.randint(0, 2**32 - 1)
         print(f"[INFO] Using randomly generated seed: {seed}")
@@ -172,7 +183,7 @@ def mutate_fasta(input_path, output_path, mutation_rate, seed=None):
 
     def mutate_base(base):
         if base.upper() not in bases:
-            return base  # N oder andere Buchstaben bleiben unverändert
+            return base  # N or other characters remain unchanged
         if random.random() < mutation_rate:
             other_bases = [b for b in bases if b != base.upper()]
             new_base = random.choice(other_bases)
@@ -185,7 +196,7 @@ def mutate_fasta(input_path, output_path, mutation_rate, seed=None):
     with open(input_path, "r") as infile, open(output_path, "w") as outfile:
         for line in infile:
             if line.startswith(">"):
-                outfile.write(line)  # Header bleibt unverändert
+                outfile.write(line)
                 sequence_count += 1
             else:
                 mutated_line = ''.join(mutate_base(base) for base in line.strip())
@@ -193,7 +204,6 @@ def mutate_fasta(input_path, output_path, mutation_rate, seed=None):
 
     print(f"{sequence_count} mutated sequences written to {output_path}")
 
-    # Write log file
     log_path = os.path.splitext(output_path)[0] + ".log"
     with open(log_path, "w") as log_file:
         log_file.write("FASTA Mutation Log\n")
@@ -206,6 +216,3 @@ def mutate_fasta(input_path, output_path, mutation_rate, seed=None):
 
     print(f"[INFO] Log written to {log_path}")
     return seed
-
-if __name__ == "__main__":
-    pass

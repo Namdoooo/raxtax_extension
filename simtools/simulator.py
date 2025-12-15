@@ -1,3 +1,10 @@
+"""
+simulator.py
+
+Purpose
+-------
+Provides functions for orchestrating simulations.
+"""
 from pathlib import Path
 import time
 import yaml
@@ -12,6 +19,11 @@ from raxtax_extension_prototype.parser_short_long import parse_reference_fasta
 
 
 def run_simulation(config_dir: Path | None = None):
+    """
+    Runs a simulation using the configuration file located in config_dir.
+    The function generates test data, computes the lookup table, and
+    executes the classification algorithm.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     if config_dir is None:
         config_dir = base_dir
@@ -62,6 +74,9 @@ def run_simulation(config_dir: Path | None = None):
     output_adapters.output_s_t(results, names, runtime_info, result_dir, total_execution_time)
 
 def run_non_present_query_simulation(config_dir: Path | None = None) :
+    """
+    Executes the simulation pipeline for the missing-query benchmark.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     if config_dir is None:
         config_dir = base_dir
@@ -96,10 +111,13 @@ def run_non_present_query_simulation(config_dir: Path | None = None) :
     output_adapters.output_s_t(results, names, runtime_info, result_dir, total_execution_time)
 
 def run_all_main():
+    """
+    Executes all main.py scripts located in direct subdirectories.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     print(base_dir)
 
-    # Suche alle main.py-Dateien in direkten Unterordnern
+    # search all main.py files in subdirectories
     for subdir in base_dir.iterdir():
         print(subdir)
         script_path = subdir / "main.py"
@@ -112,6 +130,9 @@ def run_all_main():
             subprocess.run(["python", "-m", module_path], check=True)
 
 def run_main_list(main_dir_list: list[Path]):
+    """
+    Executes main file for each directory specified in main_dir_list.
+    """
     for main_dir in main_dir_list:
         main_path = main_dir / "main.py"
         print(main_path)
@@ -124,10 +145,12 @@ def run_main_list(main_dir_list: list[Path]):
             time_log_path = "/".join(rel_parts[:-1]) + "/time.log"
             print(time_log_path)
             print(f"Running {module_path}...")
-            #subprocess.run(["/usr/bin/time", "-v", "-o", time_log_path,"python", "-m", module_path], check=True)
             subprocess.run(["python", "-m", module_path], check=True)
 
 def generate_dataset(config_dir: Path | None = None) :
+    """
+        Generates reference and query sequences for the simulation.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     if config_dir is None:
         config_dir = base_dir
@@ -136,6 +159,9 @@ def generate_dataset(config_dir: Path | None = None) :
     data_generator.simulate_references_queries_with_config(config_path, base_dir)
 
 def calculate_lookup():
+    """
+        Generates lookup tables.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     reference_path = base_dir / "references" / "references.fasta"
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
@@ -143,6 +169,9 @@ def calculate_lookup():
     parse_reference_fasta(reference_path, result_path, redo=True)
 
 def execute_raxtax(config_dir: Path | None = None) :
+    """
+        Executes the classification algorithm.
+    """
     base_dir = Path(inspect.stack()[1].filename).resolve().parent
     if config_dir is None:
         config_dir = base_dir
@@ -191,6 +220,10 @@ def execute_raxtax(config_dir: Path | None = None) :
     output_adapters.output_s_t(results, names, runtime_info, result_dir, total_execution_time)
 
 def run_executable_dir_list(executable_dir_list: list[Path]) :
+    """
+    Executes simulation with memory usage measurement for each
+    directory specified in executable_dir_list.
+    """
     for executable_dir in executable_dir_list:
         rel_parts = executable_dir.parts
         module_path = ".".join(rel_parts)
@@ -212,7 +245,3 @@ def run_executable_dir_list(executable_dir_list: list[Path]) :
 
         print(f"Running {execute_raxtax_path}...")
         subprocess.run(["python", memory_profiler_path, memory_result_path, "python", "-m", execute_raxtax_path], check=True)
-
-
-if __name__ == "__main__":
-    pass

@@ -1,3 +1,11 @@
+"""
+config_handler.py
+
+Purpose
+-------
+Provides utility functions for creating and modifying configuration files.
+"""
+
 from pathlib import Path
 import yaml
 import inspect

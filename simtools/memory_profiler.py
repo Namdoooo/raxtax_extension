@@ -1,3 +1,10 @@
+"""
+memory_profiler.py
+
+Purpose
+-------
+Executable script that measures the peak memory usage of the implemented method during execution.
+"""
 import psutil
 import subprocess
 import sys

@@ -1,3 +1,10 @@
+"""
+main_handler.py
+
+Purpose
+-------
+Provides functions for creating executable scripts used to run simulation experiments.
+"""
 from pathlib import Path
 
 def create_main_at_path(base_dir: Path, redo_main: bool = False):

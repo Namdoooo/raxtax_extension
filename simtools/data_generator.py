@@ -1,3 +1,11 @@
+"""
+data_generator.py
+
+Purpose
+-------
+Generates reference and query sequences.
+"""
+
 import subprocess
 import yaml
 import random
@@ -9,13 +17,15 @@ import simtools.fasta_editor as fasta_editor
 import raxtax_extension_prototype.utils as utils
 
 def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, treeheight: float, seed_iqtree: int=None):
+    """
+    Generates reference sequences and stores them at the specified reference path.
+    """
     print(f"[INFO] Create reference data at {reference_path}.")
 
     if not reference_path.parent.exists():
         print(f"[ERROR] Path not found: {reference_path.parent}")
         return
 
-    # Kommando zusammensetzen
     command = [
         "iqtree3",
         "--alisim", str(reference_path),
@@ -25,7 +35,6 @@ def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, tre
         "--branch-scale", str(treeheight),
     ]
 
-    # Optional: Seed hinzufügen, wenn übergeben
     if seed_iqtree is not None:
         command += ["--seed", str(seed_iqtree)]
 
@@ -37,7 +46,6 @@ def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, tre
     print("[INFO] Execute :", " ".join(command))
     result = subprocess.run(command, capture_output=True, text=True)
 
-    # Ausgabe anzeigen
     print("Ausgabe:")
     print(result.stdout)
     if result.stderr:
@@ -48,6 +56,9 @@ def run_iqtree_simulation(reference_path: Path, leafcount: int, length: int, tre
 
 def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_pygargammel: int=None, min_length: int=100, fragment_count: int=50,
                                nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
+    """
+    Generates query sequences from reference sequences and stores them in the specified queries directory.
+    """
 
     pygargammel_path = Path(__file__).resolve().parent.parent / "pygargammel" / "pygargammel.py"
 
@@ -78,14 +89,12 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
         f"--min-fragments={fragment_count}"
     ]
 
-    # Optional: Seed hinzufügen, wenn übergeben
     if seed_pygargammel is not None:
         command += ["--seed", str(seed_pygargammel)]
 
     print("[INFO] execute :", " ".join(command))
     result = subprocess.run(command, capture_output=True, text=True)
 
-    # Ausgabe anzeigen
     print("Ausgabe:")
     print(result.stdout)
     if result.stderr:
@@ -94,6 +103,9 @@ def run_pygargammel_simulation(queries_dir: Path, references_path: Path, seed_py
 
 def simulate_references_queries(base_dir: Path, leafcount: int, length: int, treeheight: float, query_count: int, iqtree_seed: int=None, pygargammel_seed: int=None, query_selection_seed: int=None,
                                 min_length: int=100, fragment_count: int=50, nick_freq: float=0.005, overhang_parameter: float=1.0, double_strand_deamination: float=0.0, single_strand_deamination: float=0.0):
+    """
+        Generates reference and query sequences and stores them at the specified reference path and queries directory, respectively.
+    """
 
     reference_dir = base_dir / "references"
     utils.create_folder(reference_dir)
@@ -129,7 +141,9 @@ def simulate_references_queries(base_dir: Path, leafcount: int, length: int, tre
         fasta_editor.sample_fasta_every_x(query_path, query_new_path, x, query_selection_seed)
 
 def simulate_references_queries_with_config(config_path: Path, base_dir: Path):
-    # Load config.yaml
+    """
+    Generates reference and query sequences based on the parameters defined in the provided configuration file.
+    """
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
 
@@ -151,6 +165,12 @@ def simulate_references_queries_with_config(config_path: Path, base_dir: Path):
                                 query_min_length, fragment_count, nick_freq, overhang_parameter, double_strand_deamination, single_strand_deamination)
 
 def simulate_references_missing_queries_with_config(config_path: Path, base_dir: Path, all_references_path: Path):
+    """
+    Generates a dataset by sampling sequences from an existing reference
+    database. The sampled sequences are removed from the reference set
+    and used as query sequences, while the remaining sequences form the
+    new reference database.
+    """
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
 
@@ -202,10 +222,3 @@ def simulate_references_missing_queries_with_config(config_path: Path, base_dir:
         print("[INFO] " + f"queries_{query_count}.fasta" + "already exists, skipping creation.")
     else:
         fasta_editor.sample_fasta_every_x(query_path, query_new_path, x, query_selection_seed)
-
-
-if __name__ == "__main__":
-    seeds = []
-    for i in range(10):
-        seeds.append(random.randint(1, 1000))
-    print(seeds)
