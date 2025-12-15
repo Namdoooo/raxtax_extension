@@ -87,3 +87,6 @@ additional output files are generated:
 
 ## Notes
 The terms mutation_rate (code) and substitution rate (thesis) refer to the same parameter.
+
+The benchmark was executed using commit `a9be85ce85a571d72b336cf9dc73f4780033c291` of the `raxtax_extension`
+repository.
