@@ -9,56 +9,6 @@ Probabilistic model of raxtax.
 import numpy as np
 from scipy import special
 
-#calculates pmf for one query sequence
-def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarray:
-    #print(match_count)
-    # references equation 8
-
-    pmf: np.ndarray = np.zeros(t + 1)
-    if match_count == 0:
-        pmf[0] = 1
-        return pmf
-
-    if match_count == query_set_size:
-        pmf[0] = 1e-300
-        pmf[-1] = 1
-        return pmf
-
-    denominator = special.comb(query_set_size + t - 1, t)
-
-    nominator1_n = match_count + 0 - 1
-    nominator1_k = 0
-
-    nominator2_n = query_set_size - match_count + (t - 0) - 1
-    nominator2_k = t - 0
-
-    nominator = special.comb(nominator1_n, nominator1_k) * special.comb(nominator2_n, nominator2_k)
-
-    pmf[0] = nominator / denominator
-    #print("denominator: ", denominator)
-
-    if pmf[0] == 0:
-        print(0, match_count, query_set_size)
-
-    for i in range(1, t + 1):
-        nominator1_n += 1
-        nominator1_k += 1
-        #print("nominator: ", nominator)
-        nominator = nominator / nominator1_k  * nominator1_n / nominator2_n  * nominator2_k
-
-        pmf[i] = nominator / denominator
-
-        if pmf[i] == 0:
-            print(i, match_count, query_set_size)
-
-        nominator2_n -= 1
-        nominator2_k -= 1
-
-    if np.any(pmf == 0.0):
-        raise ValueError("PMF contains zero entries, which is not allowed.")
-
-    return pmf
-
 def log_binom(n: int, k: int):
     """
     Computes the natural logarithm of the binomial coefficient C(n, k).
