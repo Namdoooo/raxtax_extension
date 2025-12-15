@@ -134,68 +134,6 @@ def plot_benchmark(
     else:
         plt.show()
 
-def plot_paired_lines(
-    df: pd.DataFrame,
-    id_col: str,
-    value_col: str,
-    condition_col: str,
-    xlabel: str = None,
-    ylabel: str = None,
-    title: str = None,
-    color: str = "#ED6D52",
-    linewidth: float = None,
-    alpha: float = None,
-    marker: str = "o",
-    markersize: int = None,
-    rotation: int = 0,
-    save_path: str | Path = None
-):
-    """
-    Paired line plot using seaborn styling for consistency across plots.
-    All lines and points are in the same color.
-    """
-
-    # Prepare x-axis mapping
-    conditions = sorted(df[condition_col].unique())
-    cond_map = {cond: i for i, cond in enumerate(conditions)}
-    df["_x"] = df[condition_col].map(cond_map)
-
-    sns.set_style("whitegrid")
-    plt.figure(figsize=(6, 4))
-
-    # Plot one line per ID (each pair)
-    for _, group in df.groupby(id_col):
-        if len(group) == 2:
-            sns.lineplot(
-                data=group,
-                x="_x",
-                y=value_col,
-                sort=False,
-                linewidth=linewidth,
-                alpha=alpha,
-                marker=marker,
-                markersize=markersize,
-                color=color
-            )
-
-    plt.xticks([0, 1], conditions, rotation=rotation)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if title:
-        plt.title(title)
-
-    plt.grid(True, axis="y")
-    plt.tight_layout()
-
-    if save_path:
-        save_path = Path(save_path)
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(save_path, dpi=300)
-        print(f"Saved plot to {save_path}")
-    else:
-        plt.show()
-
-
 def plot_paired_boxplot(
     df: pd.DataFrame,
     value_col: str,
@@ -268,7 +206,6 @@ def plot_paired_boxplot(
         print(f"Saved boxplot to {save_path}")
     else:
         plt.show()
-
 
 def plot_grouped_boxplots(
     df: pd.DataFrame,
