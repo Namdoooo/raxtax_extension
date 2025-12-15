@@ -1,3 +1,10 @@
+"""
+output_adapters.py
+
+Description
+-----------
+Module responsible for formatting, filtering and exporting classification results.
+"""
 import time
 import itertools
 import operator
@@ -6,7 +13,29 @@ from pathlib import Path
 import raxtax_extension_prototype.prob_fast as prob_fast
 
 def evaluate_confidence_scores(names, prob):
+    """
+    Aggregates, ranks, and filters confidence scores to identify relevant
+    results.
 
+    Scores associated with identical names are aggregated, sorted in
+    descending order, and filtered using a minimum confidence threshold
+    of 0.5%. If no result exceeds the threshold, the highest-scoring
+    entry is returned to ensure a non-empty result.
+
+    Parameters
+    ----------
+    names : iterable
+        Identifiers associated with the confidence scores (e.g.,
+        reference or lineage names).
+    prob : iterable
+        Confidence scores corresponding to the provided names.
+
+    Returns
+    -------
+    list of tuples
+        List of (name, confidence_score) pairs representing the filtered
+        and ranked results.
+    """
     combined = list(zip(names, prob))
     result = [(key, sum(p for _, p in group)) for key, group in itertools.groupby(combined, key=operator.itemgetter(0))]
     sorted_result = sorted([(n, float(round(p, 2))) for n, p in result], key=lambda x: x[1], reverse=True)
@@ -102,6 +131,38 @@ def output_sim_miseq(results, reference_names, runtime_info, result_dir: Path, c
     output_meta_data(result_dir, metadata)
 
 def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_execution_time, confidence_threshold=0.5):
+    """
+    Evaluates and records confidence scores and evaluation metrics.
+
+    For each query, confidence scores are computed and written to an
+    output file. Predictions are evaluated using a confidence threshold to
+    determine true positives, false positives, false negatives and
+    misclassifications. Summary statistics and runtime information are
+    stored as metadata.
+
+    Parameters
+    ----------
+    results : list of tuples
+        Matching results for all queries. Each entry is a tuple of the form
+        (query_name, query_kmer_set_size, intersection_sizes), where
+        intersection_sizes is a list of k-mer intersection sizes between
+        the query and all reference sequences.
+    reference_names : list of str
+        Names of the reference sequences.
+    runtime_info : dict
+        Runtime measurements for the individual processing steps.
+    result_dir : pathlib.Path
+        Directory where result files and metadata are written.
+    total_execution_time : float
+        Total execution time of the simulation.
+    confidence_threshold : float, optional
+        Minimum confidence score required for a positive classification.
+
+    Returns
+    -------
+    None
+        Results and metadata are written to disk.
+    """
     tp = 0
     mc = 0
     fn = 0
@@ -172,6 +233,9 @@ def output_s_t(results, reference_names, runtime_info, result_dir: Path, total_e
     output_meta_data(result_dir, metadata)
 
 def output_meta_data(result_dir: Path, metadata):
+    """
+    Writes metadata key–value pairs to a metadata output file.
+    """
     result_dir.mkdir(exist_ok=True)
     results_file = result_dir / "metadata.out"
 

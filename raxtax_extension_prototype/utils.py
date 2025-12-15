@@ -35,7 +35,6 @@ def complement_kmer_index(kmer: int, k: int = constants.K):
     mask = (1 << (2 * k)) - 1
     return kmer ^ mask
 
-
 def create_random_seed() -> int:
     seed = np.random.randint(0, 2 ** 32 - 1)
     return seed
@@ -143,12 +142,10 @@ def compare_files(file1: str, file2: str) -> bool:
 
     return identical
 
-
 def float_to_string_without_point(num: float) -> str:
     # Erst als String mit möglichst wenig Nachkommastellen darstellen
     s = format(num, 'f').rstrip('0').rstrip('.')
     return s.replace(".", "")
-
 
 def create_folder(path: Union[Path, str]) -> None:
 

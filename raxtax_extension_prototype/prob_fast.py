@@ -1,3 +1,11 @@
+"""
+prob_fast.py
+
+Purpose
+-------
+Probabilistic model of raxtax.
+"""
+
 import numpy as np
 from scipy import special
 
@@ -52,11 +60,53 @@ def calculate_pmf_old(match_count: int, query_set_size: int, t: int) -> np.ndarr
     return pmf
 
 def log_binom(n: int, k: int):
+    """
+    Computes the natural logarithm of the binomial coefficient C(n, k).
+
+    The computation is performed using the log-gamma function to ensure
+    numerical stability for large values of n and k.
+
+    Parameters
+    ----------
+    n : int
+        Total number of elements.
+    k : int
+        Number of selected elements.
+
+    Returns
+    -------
+    float
+        Natural logarithm of the binomial coefficient.
+
+    Raises
+    ------
+    ValueError
+        If k is not in the range [0, n].
+    """
     if k < 0 or k > n:
         raise ValueError("k must be between 0 and n")
     return special.gammaln(n + 1) - special.gammaln(k + 1) - special.gammaln(n - k + 1)
 
 def calculate_pmf(match_count: int, query_set_size: int, t: int) -> np.ndarray:
+    """
+    Computes the probability mass function (PMF) for a single
+    query–reference pair.
+
+    Parameters
+    ----------
+    match_count : int
+        Size of the intersection between the query and reference k-mer
+        sets.
+    query_set_size : int
+        Size of the query k-mer set.
+    t : int
+        Subsample size.
+
+    Returns
+    -------
+    numpy.ndarray
+        Probability mass function of length t + 1.
+    """
     pmf_log = np.full(t + 1, -np.inf)
 
     if match_count == 0:
@@ -97,6 +147,25 @@ def calculate_pmf(match_count: int, query_set_size: int, t: int) -> np.ndarray:
     return pmf
 
 def calculate_confidence_scores(match_counts: np.ndarray, t: int, query_set_size: int) -> np.ndarray:
+    """
+    Computes confidence scores for a single query with respect
+    to all reference sequences.
+
+    Parameters
+    ----------
+    match_counts : numpy.ndarray
+        Array of k-mer intersection sizes between the query and each
+        reference sequence.
+    t : int
+        Subsample size.
+    query_set_size : int
+        Size of the query k-mer set.
+
+    Returns
+    -------
+    numpy.ndarray
+        Confidence scores for the query across all references.
+    """
     #calculate number of occurrences of each match_count
     occurrences = {}
     for match_count in match_counts:
@@ -107,37 +176,31 @@ def calculate_confidence_scores(match_counts: np.ndarray, t: int, query_set_size
 
     #calculate pmf for each match_count
     pmf_dict = {key: calculate_pmf(key, query_set_size, t) for key in occurrences}
-    #print("pmf_dict", pmf_dict)
 
     #calculate pmf_prefix_sum for each match_count
     pmf_prefix_sum_dict = {
         key : np.cumsum(pmf, axis=0, dtype=np.float64)
         for key, pmf in pmf_dict.items()
     }
-    #print("pmf_prefix_sum_dict", pmf_prefix_sum_dict)
 
     #calculate log of pmf_prefix_sum for each match_count
     log_pmf_prefix_sum_dict = { key : np.log(pmf_prefix_sum_dict[key]) for key in pmf_prefix_sum_dict}
-    #print("log_pmf_prefix_sum_dict", log_pmf_prefix_sum_dict)
 
+    #weight each log-prefix-sum by its corresponding occurrence count
     scaled_log_prefix_sum_dict = {
         key : occurrences[key] * log_pmf_prefix_sum_dict[key] for key in occurrences
     }
 
     #calculate log of C
     log_C = np.sum(np.stack(list(scaled_log_prefix_sum_dict.values())), axis=0, dtype=np.float64)
-    #print("log_C", log_C)
 
     #calculate C
     C = np.exp(log_C)
-    #print("C", C)
 
     #calculate probabilities for each match_count
     P_dict = {
         key : np.sum(pmf_dict[key] * (C / pmf_prefix_sum_dict[key]), dtype=np.float64) for key in occurrences
     }
-
-    #print("P_dict", P_dict)
 
     P = np.array([P_dict[match_count] for match_count in match_counts])
 

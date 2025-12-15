@@ -1,3 +1,14 @@
+"""
+parser_short_long.py
+
+Description
+-----------
+Module for matching short query sequences against long reference sequences.
+
+The module provides functionality for reading and preprocessing reference
+sequences, constructing lookup tables, loading and orienting query sequences
+and computing k-mer intersection sizes between queries and references.
+"""
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
@@ -11,7 +22,24 @@ import raxtax_extension_prototype.constants as constants
 import raxtax_extension_prototype.utils as utils
 
 def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
+    """
+    Parses reference sequences from a FASTA file and
+    constructs a k-mer lookup table.
 
+    Parameters
+    ----------
+    reference_path : pathlib.Path
+        Path to the reference FASTA file.
+    result_path : pathlib.Path
+        Path where the generated lookup table is stored in HDF5 format.
+    redo : bool
+        If False and the result file already exists, parsing is skipped.
+
+    Returns
+    -------
+    None
+        The function writes the lookup tables to disk.
+    """
     if result_path.exists() and not redo:
         return
 
@@ -38,9 +66,6 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
         kmer_occurrence_count = np.zeros(constants.KMER_COUNT, dtype=np.uint32)
 
         for idx, (lineage, sequence) in enumerate(lin_seq_pair):
-            #print(idx)
-            #print(lineage)
-            #print(sequence)
 
             kmer_map = [[] for _ in range(constants.KMER_COUNT)]
 
@@ -49,6 +74,7 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
                 kmer_map[kmer].append(i)
                 kmer_occurrence_count[kmer] += 1
 
+            #convert per-k-mer position lists into an offset-based flattened representation
             flat_data = np.concatenate(kmer_map)
             bucket_sizes = np.array([len(b) for b in kmer_map], dtype=np.uint32)
             offsets = np.concatenate((np.array([0]), np.cumsum(bucket_sizes)))
@@ -61,6 +87,23 @@ def parse_reference_fasta(reference_path: Path, result_path: Path, redo: bool):
         f.create_dataset("kmer_occurrence_count", data=kmer_occurrence_count, dtype=np.uint32, compression="gzip")
 
 def parse_query_fasta(query_path: Path):
+    """
+    Parses query sequences from a FASTA file and converts each query
+    sequence into its k-mer set.
+
+    Parameters
+    ----------
+    query_path : pathlib.Path
+        Path to the query FASTA file.
+
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - "query_names": list of query sequence identifiers
+        - "kmer_sets": list of k-mer sets for each query sequence
+        - "sequence_lengths": list of query sequence lengths
+    """
     query_names = []
     kmer_sets = []
     sequence_lengths = []
@@ -81,6 +124,28 @@ def parse_query_fasta(query_path: Path):
     return data
 
 def calculate_intersection_size(flat_data: np.ndarray, offsets: np.ndarray, kmer_set: np.ndarray, window_size: int):
+    """
+    Computes the maximum k-mer intersection size between a query and a
+    sliding window within a reference sequence.
+
+    Parameters
+    ----------
+    flat_data : numpy.ndarray
+        Flattened array of k-mer positions for the reference sequence
+        sorted lexicographically by k-mer identity.
+    offsets : numpy.ndarray
+        Offset array defining k-mer position ranges in flat_data.
+    kmer_set : numpy.ndarray
+        Query k-mer set.
+    window_size : int
+        Size of the sliding window applied to the reference sequence.
+
+    Returns
+    -------
+    int
+        Maximum k-mer intersection size between the query and the
+        reference sequence.
+    """
     max_intersection_size = 0
 
     window_intersection_sizes = {}
@@ -100,6 +165,38 @@ def calculate_intersection_size(flat_data: np.ndarray, offsets: np.ndarray, kmer
     return max_intersection_size
 
 def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query: bool = False, redo: bool = False):
+    """
+    Computes k-mer intersection sizes sequentially between all query
+    sequences and reference sequences.
+
+    Parameters
+    ----------
+    reference_path : pathlib.Path
+        Path to the reference FASTA file.
+    query_path : pathlib.Path
+        Path to the query FASTA file.
+    orient_query : bool, optional
+        If True, query sequences are oriented prior to matching.
+    redo : bool, optional
+        If True, existing reference lookup data are recomputed.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - result : list of tuples
+            For each query, a tuple of the form
+            (query_name, query_kmer_set_size, intersection_sizes),
+            where intersection_sizes is a list of k-mer intersection
+            sizes with all reference sequences.
+        - reference_names : list of str
+            Names of the reference sequences.
+        - runtime_info : dict
+            Dictionary containing runtime measurements for the
+            individual processing steps.
+    """
+
+    #parse reference sequences
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
 
     reference_start_time = time.perf_counter()
@@ -113,6 +210,7 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query:
         print("Lookup table created.")
         print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
 
+    #orient queries
     query_oriented_path = query_path
     orient_queries_time = 0
     if orient_query:
@@ -122,7 +220,7 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query:
         orient_queries_end_time = time.perf_counter()
         orient_queries_time = orient_queries_end_time - orient_queries_start_time
 
-
+    #parse query sequences
     query_start_time = time.perf_counter()
     query_data = parse_query_fasta(query_oriented_path)
     query_end_time = time.perf_counter()
@@ -137,6 +235,7 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query:
     intersection_sizes = [[] for _ in range(len(query_names))]
     reference_names = []
 
+    #calculate intersection sizes sequentially
     calculate_intersection_sizes_start = time.perf_counter()
     average_reference_processing_time = 0
     with h5py.File(result_path, "r") as f:
@@ -178,6 +277,24 @@ def get_intersection_sizes(reference_path: Path, query_path: Path, orient_query:
     return result, reference_names, runtime_info
 
 def orient_queries(query_path: Path, reference_data_path: Path, redo: bool = False):
+    """
+    Orients query sequences with respect to the reference database.
+
+    Parameters
+    ----------
+    query_path : pathlib.Path
+        Path to the query FASTA file.
+    reference_data_path : pathlib.Path
+        Path to the reference lookup table.
+    redo : bool, optional
+        If False and an oriented query file already exists, orientation
+        is skipped.
+
+    Returns
+    -------
+    None
+        The oriented query sequences are written to disk.
+    """
     print(f"[INFO] Orient queries from: {query_path}")
     oriented_path = query_path.with_name(query_path.stem + "_oriented" + query_path.suffix)
 
@@ -209,6 +326,35 @@ def orient_queries(query_path: Path, reference_data_path: Path, redo: bool = Fal
     print(f"[INFO] Oriented queries written to: {oriented_path}")
 
 def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths):
+    """
+    Computes k-mer intersection sizes between a single reference
+    sequence and all query sequences.
+
+    The function loads the k-mer lookup data of one reference sequence
+    from disk and computes the k-mer intersection size between this
+    reference and each query sequence. It is used when matching is
+    parallelized across reference sequences.
+
+    Parameters
+    ----------
+    idx : str
+        Identifier of the reference sequence within the lookup table.
+    result_path : pathlib.Path
+        Path to the HDF5 file containing reference lookup data.
+    query_kmer_sets : list of numpy.ndarray
+        List of k-mer sets derived from the query sequences.
+    query_sequence_lengths : list of int
+        Lengths of the query sequences, used to define sliding window
+        sizes.
+
+    Returns
+    -------
+    tuple
+        Tuple of the form (idx, lineage_name, intersection_sizes), where
+        lineage name is the name of the reference sequence and
+        intersection_sizes contains the k-mer intersection size between
+        the reference sequence and each query.
+    """
     with h5py.File(result_path, "r") as f:
         reference_processing_time_start = time.perf_counter()
         grp = f[idx]
@@ -228,6 +374,40 @@ def process_reference(idx, result_path, query_kmer_sets, query_sequence_lengths)
     return idx, lineage_name, intersection_sizes
 
 def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, orient_query: bool = False, redo: bool = False, num_workers: int = None):
+    """
+    Computes k-mer intersection sizes between all query sequences
+    and reference sequences using parallel processing.
+
+    Parameters
+    ----------
+    reference_path : pathlib.Path
+        Path to the reference FASTA file.
+    query_path : pathlib.Path
+        Path to the query FASTA file.
+    orient_query : bool, optional
+        If True, query sequences are oriented prior to matching.
+    redo : bool, optional
+        If True, existing reference lookup data are recomputed.
+    num_workers : int, optional
+        Number of parallel processes to use.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - result : list of tuples
+            For each query, a tuple of the form
+            (query_name, query_kmer_set_size, intersection_sizes),
+            where intersection_sizes is a list of k-mer intersection
+            sizes with all reference sequences.
+        - reference_names : list of str
+            Names of the reference sequences.
+        - runtime_info : dict
+            Dictionary containing runtime measurements for the
+            individual processing steps.
+    """
+
+    #parse reference sequences
     result_path = reference_path.with_name(reference_path.stem + "_data.h5")
 
     reference_start_time = time.perf_counter()
@@ -241,6 +421,7 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, orie
         print("Lookup table created.")
         print(f"Parsing and storing reference look up took {reference_parse_time} seconds.")
 
+    #orient queries
     query_oriented_path = query_path
     orient_queries_time = 0
     if orient_query:
@@ -250,6 +431,7 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, orie
         orient_queries_end_time = time.perf_counter()
         orient_queries_time = orient_queries_end_time - orient_queries_start_time
 
+    #parse query sequences
     query_start_time = time.perf_counter()
     query_data = parse_query_fasta(query_oriented_path)
     query_end_time = time.perf_counter()
@@ -267,6 +449,7 @@ def get_intersection_sizes_parallel(reference_path: Path, query_path: Path, orie
     calculate_intersection_sizes_start = time.perf_counter()
     reference_count = -1
 
+    #calculate intersection sizes in parallel
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         with h5py.File(result_path, "r") as f:
