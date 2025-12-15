@@ -1,3 +1,11 @@
+"""
+config_handler.py
+
+Purpose
+-------
+Provides functions for significance analysis.
+"""
+
 import pandas as pd
 import pingouin as pg
 from pathlib import Path
@@ -88,20 +96,3 @@ def run_significance_analysis(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     results.to_csv(output_path, sep="\t", index=False)
     print(f"Saved results to {output_path}")
-
-if __name__ == '__main__':
-    df = pd.DataFrame({
-        "DB": ["db1", "db2", "db3", "db4", "db5"] * 2,
-        "Classifier": ["raxtax"] * 5 + ["sintax"] * 5,
-        "F1": [0.87, 0.91, 0.84, 0.89, 0.88,  # raxtax
-               0.85, 0.90, 0.80, 0.86, 0.86]  # sintax
-    })
-
-    run_significance_analysis(
-        df=df,
-        id_col="DB",
-        value_col="F1",
-        condition_col="Classifier",
-        group_names=("raxtax", "sintax"),
-        output_path="significance_test.tsv"
-    )

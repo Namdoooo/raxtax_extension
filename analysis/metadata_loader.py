@@ -1,8 +1,20 @@
+"""
+metadata_loader.py
+
+Purpose
+-------
+Provides functions for aggregating evaluation results.
+"""
+
 from pathlib import Path
 import pandas as pd
 import yaml
 
 def parse_metadata_file(file_path):
+    """
+    Parses a file containing key–value pairs and returns
+    the extracted information as a dictionary.
+    """
     data = {}
     with open(file_path, "r") as f:
         for line in f:
@@ -11,9 +23,11 @@ def parse_metadata_file(file_path):
                 data[key.strip()] = value.strip()
     return data
 
-
 def aggregate_iteration(iteration_path: Path, independent_var_name: str):
-
+    """
+    Aggregates evaluation results of all experiments within
+    an iteration into a CSV file.
+    """
     exp_dir_list = sorted([p for p in iteration_path.iterdir() if p.is_dir() and p.name != "__pycache__"])
     rows = []
 
@@ -46,6 +60,9 @@ def aggregate_iteration(iteration_path: Path, independent_var_name: str):
     return aggregated_metadata_path
 
 def aggregate_all_iterations(base_dir: Path, independent_var_name: str):
+    """
+    Aggregates evaluation results from all iterations into a CSV file.
+    """
     iteration_col_name = "iteration"
 
     iteration_dir_list = sorted([p for p in base_dir.iterdir() if p.is_dir() and p.name.startswith("iteration")])
@@ -72,6 +89,10 @@ def aggregate_all_iterations(base_dir: Path, independent_var_name: str):
     return combined_metadata_path
 
 def aggregate_all_iterations_with_list(base_dir: Path, independent_var_name: str, iteration_dir_list: list):
+    """
+    Aggregates evaluation results from all iterations listed in
+    iteration_dir_list into a CSV file.
+    """
     iteration_col_name = "iteration"
 
     dfs = []
@@ -97,6 +118,10 @@ def aggregate_all_iterations_with_list(base_dir: Path, independent_var_name: str
     return combined_metadata_path
 
 def aggregate_folder(base_dir: Path, independent_var_name: str):
+    """
+    Aggregates evaluation results within a directory where experiments
+    differ only in their iteration index and stores them in a CSV file.
+    """
     exp_dir_list = sorted([p for p in base_dir.iterdir() if p.is_dir() and p.name != "__pycache__"])
     rows = []
     iteration_col_name = "iteration"
@@ -134,6 +159,13 @@ def aggregate_folder(base_dir: Path, independent_var_name: str):
     return aggregated_metadata_path
 
 def aggregate_all_folders_with_list(base_dir: Path, independent_var_name: str, folder_dir_list: list):
+    """
+    Aggregates evaluation results from multiple experiment
+    partitions listed in folder_dir_list into a CSV file.
+
+    This function is specifically designed for the alternation_m004, alternation_m008, alternation_t003 and
+    alternation_t017 benchmarks, which use a different directory structure.
+    """
     iteration_col_name = "iteration"
     df_all = []
 
@@ -156,15 +188,18 @@ def aggregate_all_folders_with_list(base_dir: Path, independent_var_name: str, f
 
     return combined_metadata_path
 
-
 def aggregate_memory_iteration(iteration_path: Path, independent_var_name: str):
-
+    """
+    Aggregates memory usage measurements of all
+    experiments within an iteration into a CSV file.
+    """
     exp_dir_list = sorted([p for p in iteration_path.iterdir() if p.is_dir() and p.name != "__pycache__"])
     rows = []
 
     for exp_dir in exp_dir_list:
         config_path = list(exp_dir.glob("config.yaml"))[0]
-        memory_data_path = list(exp_dir.glob("time.log"))[0]
+        #memory_data_path = list(exp_dir.glob("time.log"))[0]
+        memory_data_path = list(exp_dir.glob("psutil_memory_results.csv"))[0]
 
         with config_path.open("r") as f:
             config = yaml.safe_load(f)
@@ -191,6 +226,9 @@ def aggregate_memory_iteration(iteration_path: Path, independent_var_name: str):
     return aggregated_memory_data_path
 
 def aggregate_all_memory_iterations(base_dir: Path, independent_var_name: str):
+    """
+    Aggregates memory usage measurements from all iterations into a CSV file.
+    """
     iteration_col_name = "iteration"
 
     iteration_dir_list = sorted([p for p in base_dir.iterdir() if p.is_dir() and p.name.startswith("iteration")])
@@ -215,9 +253,3 @@ def aggregate_all_memory_iterations(base_dir: Path, independent_var_name: str):
     print(f"Saved: {combined_memory_data_path}")
 
     return combined_memory_data_path
-
-if __name__ == "__main__":
-    aggregated_memory_data_path = aggregate_all_memory_iterations(Path("../benchmarks_hits/reference_memory_benchmark"), "leaf_count")
-    df_all = pd.read_csv(aggregated_memory_data_path)
-    df = df_all[["iteration", "leaf_count", "Maximum resident set size (kbytes)"]]
-    print(df)

@@ -1,7 +1,14 @@
+"""
+config_handler.py
+
+Purpose
+-------
+Provides utility functions for visualizing evaluation results.
+"""
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import numpy as np
 from pathlib import Path
 
 def plot_benchmark(
@@ -265,9 +272,9 @@ def plot_paired_boxplot(
 
 def plot_grouped_boxplots(
     df: pd.DataFrame,
-    x_col: str,         # e.g., "metric"
-    y_col: str,         # e.g., "value"
-    hue_col: str,       # e.g., "method"
+    x_col: str,
+    y_col: str,
+    hue_col: str,
     title: str = None,
     ylabel: str = "Value",
     xlabel: str = "Metric",
@@ -356,29 +363,3 @@ def plot_grouped_boxplots(
         print(f"Plot saved to {save_path}")
     else:
         plt.show()
-
-
-if __name__ == "__main__":
-    df = pd.DataFrame({
-        "method": ["oriented queries"] * 3 + ["disoriented queries"] * 3,
-        "f1_score": [0.91, 0.89, 0.87, 0.85, 0.82, 0.84]
-    })
-
-    plot_paired_boxplot(df, value_col="f1_score", condition_col="method", ylim=None)
-
-    # Beispiel-DataFrame erzeugen
-    df = pd.DataFrame({
-        "metric": ["accuracy"] * 6 + ["f1_score"] * 6,
-        "value": [0.85, 0.87, 0.86, 0.80, 0.82, 0.81, 0.75, 0.78, 0.77, 0.70, 0.72, 0.73],
-        "method": ["Method A"] * 3 + ["Method B"] * 3 + ["Method A"] * 3 + ["Method B"] * 3
-    })
-
-    # Funktion aufrufen
-    plot_grouped_boxplots(
-        df,
-        x_col="metric",
-        y_col="value",
-        hue_col="method",
-        ylabel="Score",
-        xlabel="Metrik",
-    )
