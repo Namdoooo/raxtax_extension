@@ -7,7 +7,7 @@ The objective is to assess the impact of query count on execution time.
 
 ## Benchmark Design
 The benchmark is organized into multiple independent iterations.
-Within each iteration, the number of queries is varied between 400 and
+Within each iteration, the number of references is varied between 400 and
 3200 while all other parameters remain fixed.
 
 For each test within an iteration, a new dataset is generated using
@@ -20,7 +20,7 @@ benchmark scripts. No external input data is required.
 
 For each test, a new dataset is generated using random seeds. Both the
 query sequences and the corresponding reference data are regenerated
-for each query count.
+for each reference count.
 
 ## Execution workflow
 The benchmark execution is organized in multiple layers.
