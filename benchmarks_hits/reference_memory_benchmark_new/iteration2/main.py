@@ -64,5 +64,5 @@ if __name__ == '__main__':
 
         executable_dir_list.append(executable_dir)
 
-    #run_executable_dir_list(executable_dir_list)
+    run_executable_dir_list(executable_dir_list)
 
