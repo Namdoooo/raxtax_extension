@@ -19,12 +19,12 @@ if __name__ == '__main__':
         config_dir.mkdir(parents=True, exist_ok=True)
 
         disorientation_seed = utils.create_random_seed()
-        modify_config_at_path(base_dir=config_dir, redo_config=False, disorientation_probability=disorientation_probability, disorientation_seed=disorientation_seed)
+        modify_config_at_path(base_dir=config_dir, redo_config=True, disorientation_probability=disorientation_probability, disorientation_seed=disorientation_seed)
 
 
         main_dir = config_dir
         create_main_at_path(base_dir=main_dir, redo_main=False)
         main_dir_list.append(main_dir)
 
-    #run_main_list(main_dir_list)
+    run_main_list(main_dir_list)
 
