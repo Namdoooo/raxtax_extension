@@ -127,6 +127,6 @@ represent tree height in the phylogenetic sense. Instead, it is a
 branch length scaling parameter that scales the initial average branch
 length of 0.1 used for generating the reference sequences.
 
-The benchmark was executed using commit `ea2171dd68aa5085be7d41f9cff52e7a758bbad0` of the `raxtax_extension`
+The benchmark was executed using commit `7ac5106517922bd36145c900670d7bd81b4b2518` of the `raxtax_extension`
 repository.
 

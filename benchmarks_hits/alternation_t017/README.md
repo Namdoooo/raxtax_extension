@@ -63,11 +63,11 @@ From the raxtax root directory, execute the oriented benchmark first to
 generate the configuration files:
 
 ```
-python -m benchmarks_hits.alternation_t003.oriented.main
+python -m benchmarks_hits.alternation_t017.oriented.main
 ```
 
 Before executing this command, the line in
-`benchmarks_hits/alternation_t003/oriented/main.py` that triggers the
+`benchmarks_hits/alternation_t017/oriented/main.py` that triggers the
 execution of the classification algorithm must be commented out
 (currently line 62). This ensures that only the configuration files are 
 generated during this step.
@@ -79,13 +79,13 @@ seeds and input data for the paired tests.
 Then execute the complete benchmark:
 
 ```
-python -m benchmarks_hits.alternation_t003.main
+python -m benchmarks_hits.alternation_t017.main
 ```
 
 After completion, analysis and plotting can be performed with:
 
 ```
-python -m benchmarks_hits.alternation_t003.analyze
+python -m benchmarks_hits.alternation_t017.analyze
 ```
 
 ## Output
@@ -127,6 +127,6 @@ represent tree height in the phylogenetic sense. Instead, it is a
 branch length scaling parameter that scales the initial average branch
 length of 0.1 used for generating the reference sequences.
 
-The benchmark was executed using commit `ea2171dd68aa5085be7d41f9cff52e7a758bbad0` of the `raxtax_extension`
+The benchmark was executed using commit `30bf3c38847a6f0665531abdc8338cd00ea26a7c` of the `raxtax_extension`
 repository.
 
