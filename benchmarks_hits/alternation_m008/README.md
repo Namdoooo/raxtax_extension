@@ -63,11 +63,11 @@ From the raxtax root directory, execute the oriented benchmark first to
 generate the configuration files:
 
 ```
-python -m benchmarks_hits.alternation_m004.oriented.main
+python -m benchmarks_hits.alternation_m008.oriented.main
 ```
 
 Before executing this command, the line in
-`benchmarks_hits/alternation_m004/oriented/main.py` that triggers the
+`benchmarks_hits/alternation_m008/oriented/main.py` that triggers the
 execution of the classification algorithm must be commented out
 (currently line 62). This ensures that only the configuration files are 
 generated during this step.
@@ -79,13 +79,13 @@ seeds and input data for the paired tests.
 Then execute the complete benchmark:
 
 ```
-python -m benchmarks_hits.alternation_m004.main
+python -m benchmarks_hits.alternation_m008.main
 ```
 
 After completion, analysis and plotting can be performed with:
 
 ```
-python -m benchmarks_hits.alternation_m004.analyze
+python -m benchmarks_hits.alternation_m008.analyze
 ```
 
 ## Output
@@ -124,6 +124,6 @@ the following additional output files are generated:
 ## Notes
 The terms mutation_rate (code) and substitution rate (thesis) refer to the same parameter.
 
-The benchmark was executed using commit `6b9fc066cd644f4f09c3dfd7c22c2d10bcb65838` of the `raxtax_extension`
+The benchmark was executed using commit `ea2171dd68aa5085be7d41f9cff52e7a758bbad0` of the `raxtax_extension`
 repository.
 
