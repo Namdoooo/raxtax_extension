@@ -95,5 +95,5 @@ if __name__ == '__main__':
         create_specific_main_at_path(base_dir=main_dir, func_name="run_non_present_query_simulation", redo_main=False)
         main_dir_list.append(main_dir)
 
-    #run_main_list(main_dir_list)
+    run_main_list(main_dir_list)
 
