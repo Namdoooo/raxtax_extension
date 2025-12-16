@@ -123,6 +123,6 @@ the following additional output files are generated:
 
 ## Notes
 
-The benchmark was executed using commit `daa97cdda2e094564233d27a4cb0500bc9d1d57e` of the `raxtax_extension`
+The benchmark was executed using commit `6b9fc066cd644f4f09c3dfd7c22c2d10bcb65838` of the `raxtax_extension`
 repository.
 
