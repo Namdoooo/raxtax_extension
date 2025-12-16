@@ -93,5 +93,5 @@ additional output files are generated:
   Final plot showing the relationship between query count and memory.
 
 ## Notes
-The benchmark was executed using commit `65b0c14efeafb9c40e4bb1bed3c865365e5c328f` of the `raxtax_extension`
+The benchmark was executed using commit `eab01000df92819632a2cbc595e983cb2e10d55a` of the `raxtax_extension`
 repository.
