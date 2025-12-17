@@ -6,6 +6,7 @@ channels:
 dependencies:
   - python=3.10
   - seaborn=0.13.2
+  - pandas=2.1.1
   - iqtree=3.0.1
   - numpy=1.26.4
   - pandas=2.1.1
