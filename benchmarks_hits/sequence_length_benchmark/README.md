@@ -1,4 +1,4 @@
-# Benchmark: Reference Count vs Runtime
+# Benchmark: Reference Sequence Base Length vs Runtime
 
 ## Purpose
 This benchmark evaluates how the runtime performance of the extended
