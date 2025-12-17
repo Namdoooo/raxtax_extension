@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+# NOTE:
+# This file is an unmodified copy of the following repository:
+# https://github.com/computations/pygargammel
+
 import numpy
 import os
 import enum
