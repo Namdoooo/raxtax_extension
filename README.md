@@ -97,3 +97,9 @@ Where required, additional manual steps (e.g. configuration file
 generation or dataset pairing) are documented in the corresponding
 README files.
 
+
+
+## Notes
+AI-based tools were used as assistance during development, primarily for
+generating print and log messages, implementing visualization-related
+functions and supporting code commenting and documentation.
