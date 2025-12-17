@@ -36,10 +36,6 @@ if __name__=="__main__":
     print(df_mean)
     print("Standard Deviation")
     print(df_std)
-    x1 = 100
-    x2 = 600
-    slope = (df_mean.loc[df_mean[independent_var_name] == x2, dependent_var_name].values[0] - df_mean.loc[df_mean[independent_var_name] == x1, dependent_var_name].values[0]) * 1024 / (x2 - x1)
-    print(f"Slope: {round(slope, 3)}")
 
     plot_benchmark(df_selected, independent_var_name, dependent_var_name, hue_col_name, xlabel, ylabel,
                    xgrid_exact=True, error="sd", save_path=plot_path)
