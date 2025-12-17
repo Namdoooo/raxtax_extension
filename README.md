@@ -28,26 +28,47 @@ framework.
 ## Installation
 
 ### Requirements
-- Conda (Miniconda)
+- Conda, version 25.3.1 was used
 
 ### Setup
-Clone the repository and navigate to the project root directory:
+Clone the repository and rename the project directory to `raxtax`, as
+the internal module structure assumes this directory name.
+Then navigate to the project root directory:
 
 ```
 git clone https://github.com/Namdoooo/raxtax_extension.git
+mv raxtax_extension raxtax
 cd raxtax
 ```
 
 Create a conda environment using the provided environment.yml file:
 
 ```
-conda env create -f environment.yml
+conda env create -f environment.yml --prefix ./.conda_venv
 ```
 
 Activate the environment:
 
 ```
 conda activate "./.conda_venv"
+```
+
+## Example Usage
+After setting up and activating the conda environment, benchmarks and
+other scripts can be executed using Python module entry points.
+
+For example, to run the benchmark evaluating the effect of substitution 
+rate on classification accuracy, execute:
+
+```
+python -m benchmarks_hits.mutation_rate.main
+```
+
+After the benchmark execution has completed, the results can be analyzed
+and visualized using:
+
+```
+python -m benchmarks_hits.mutation_rate.analyze
 ```
 
 ## Repository Structure
@@ -75,8 +96,6 @@ The repository is organized into the following main components:
 - `pygargammel/`  
   Contains an external third-party tool and is
   not developed as part of the raxtax extension prototype.
-
-
 
 ## Benchmarks
 All benchmarks are located in the benchmarks_hits/ directory.
