@@ -3,7 +3,7 @@
 ## Purpose
 This benchmark evaluates how the runtime performance of the extended
 raxtax workflow scales with an increasing reference base length.
-The objective is to assess the impact of query count on execution time.
+The objective is to assess the impact of reference base length on execution time.
 
 ## Benchmark Design
 The benchmark is organized into multiple independent iterations.

@@ -39,7 +39,7 @@ For each test, the iteration-level `main.py` performs the following
 steps:
 
 1. Generates a configuration file and an executable to run the
-   simulation with the specified average branch length.
+   simulation.
 2. Executes the simulation using the generated executable and
    configuration file.
 3. Generates the input data based on the configuration file.

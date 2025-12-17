@@ -40,8 +40,7 @@ across all iterations and executes the paired tests for that iteration.
 
 For each test, the iteration-level `main.py` performs the following steps:
 
-1. Generates a configuration file and an executable to run the simulation 
-   with the specified substitution rate.
+1. Generates a configuration file and an executable to run the simulation.
 2. Executes the simulation using the generated executable and configuration file.
 3. Generates the input data based on the configuration file.
 4. Executes the classification algorithm (raxtax extension) on the 

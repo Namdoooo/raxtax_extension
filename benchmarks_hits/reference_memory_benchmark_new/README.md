@@ -1,9 +1,9 @@
-# Benchmark: Reference Count vs Runtime
+# Benchmark: Reference Count vs Memory
 
 ## Purpose
 This benchmark evaluates how the peak memory usage of the extended
 raxtax workflow scales with an increasing number of reference sequences.
-The objective is to assess the impact of query count on memory usage.
+The objective is to assess the impact of reference count on memory usage.
 
 ## Benchmark Design
 The benchmark is organized into multiple independent iterations.

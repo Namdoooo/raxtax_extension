@@ -92,7 +92,7 @@ additional output files are generated:
 - `plots/`  
   Directory containing generated plots.
 - `tree_height_vs_f1_score.pdf`  
-  Final plot showing the relationship between substitution rate and
+  Final plot showing the relationship between average branch length and
   F1 score, used in the thesis.
 
 ## Notes
