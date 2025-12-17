@@ -1,8 +1,0 @@
-leaf_count: 1000
-sequence_length: 50000
-tree_height: 0.1
-query_count: 200
-core_count: 3
-iqtree_seed: 812532730
-pygargammel_seed: 1815913074
-query_selection_seed: 868967638
