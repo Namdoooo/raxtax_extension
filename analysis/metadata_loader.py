@@ -28,7 +28,7 @@ def aggregate_iteration(iteration_path: Path, independent_var_name: str):
     Aggregates evaluation results of all experiments within
     an iteration into a CSV file.
     """
-    exp_dir_list = sorted([p for p in iteration_path.iterdir() if p.is_dir() and p.name != "__pycache__"])
+    exp_dir_list = sorted([p for p in iteration_path.iterdir() if p.is_dir() and p.name != "__pycache__" and p.name != "references"])
     rows = []
 
     for exp_dir in exp_dir_list:
