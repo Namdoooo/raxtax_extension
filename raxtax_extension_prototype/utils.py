@@ -121,13 +121,6 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().relative_to(Path.cwd()).parent
     base_dir = base_dir.parent / "benchmarks_hits"
 
-    for i in range(1, 2):
-        for j in [20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]:
-            dir = base_dir / "sequence_length_memory_benchmark_new" / f"iteration{i}" / f"sequence_length{j}"
-            output_path = dir / "dataset.tgz"
-            input_paths = [dir / "queries/", dir / "references/"]
-            create_tar_archive(output_path, input_paths)
-
     """
     for i in range(1, 6):
         for j in [1, 2, 4, 8, 16, 24, 32, 40, 48]:
