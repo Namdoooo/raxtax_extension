@@ -5,6 +5,7 @@ channels:
   - defaults
 dependencies:
   - python=3.10
+  - pingouin=0.5.5
   - seaborn=0.13.2
   - iqtree=3.0.1
   - numpy=1.26.4
